@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.net.ssl.SSLContext;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.List;
 
 public abstract class BaseClient {
 
@@ -69,4 +70,5 @@ public abstract class BaseClient {
     protected  Object getResultForObject(Class clazz,ResponseEntity<String> response) {
         return JSON.parseObject(getResult(response), clazz);
     }
+
 }

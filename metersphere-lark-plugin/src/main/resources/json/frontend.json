@@ -1,0 +1,98 @@
+{
+  "serviceIntegration": {
+    "label": "Lark",
+    "image": "/static/index.png",
+    "tips": "使用指引：<br> 1. 请先在飞书项目上设置好插件权限 <br> 2. 保存 Basic Auth 账号信息后，需要在 MeterSphere 项目中手动关联 ID/key 和缺陷模板 马上关联项目 <br>",
+    "formItems": [
+      {
+        "name": "pluginId",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "插件id",
+        "message": "请填写插件id"
+      },
+      {
+        "name": "pluginSecret",
+        "type": "password",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "插件密钥",
+        "message": "请填写插件密钥"
+      },
+      {
+        "name": "userKey",
+        "type": "password",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "用户密钥",
+        "message": "用户密钥",
+        "instructionsIcon": "/static/lark-key.png"
+      },
+      {
+        "name": "url",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "飞书地址",
+        "message": "请填写飞书地址"
+      }
+    ]
+  },
+
+  "projectConfig": {
+    "formItems": [
+      {
+        "name": "workspaceId",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "空间id",
+        "withProjectCheck": true,
+        "instructionsIcon": "/static/lark-key.png"
+      },
+      {
+        "name": "larkIssueTypeId",
+        "type": "select",
+        "defaultValue": "",
+        "required": false,
+        "i18n": false,
+        "cascade": "larkKey",
+        "optionMethod": "getIssueTypes",
+        "label": "问题类型"
+      },
+      {
+        "name": "larkStoryTypeId",
+        "type": "select",
+        "defaultValue": "",
+        "required": false,
+        "i18n": false,
+        "cascade": "larkKey",
+        "optionMethod": "getIssueTypes",
+        "label": "需求类型"
+      }
+    ]
+  },
+
+  "accountConfig": {
+    "label": "larkPlugin",
+    "instructionsInfo": "larkPlugin",
+    "i18n": false,
+    "formItems": [
+      {
+        "name": "larkPluginId",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": false,
+        "label": "larkPluginId",
+        "message": "请输入插件id"
+      }
+    ]
+  }
+}

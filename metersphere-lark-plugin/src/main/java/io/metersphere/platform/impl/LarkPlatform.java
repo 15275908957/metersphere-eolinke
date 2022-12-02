@@ -16,6 +16,7 @@ public class LarkPlatform extends AbstractPlatform {
 
     protected LarkAbstractClient larkAbstractClient;
 
+
     public LarkPlatform(PlatformRequest request) {
         super.key = LarkPlatformMetaInfo.KEY;
         super.request = request;
@@ -65,7 +66,11 @@ public class LarkPlatform extends AbstractPlatform {
     @Override
     public void validateProjectConfig(String projectConfig) {
         try {
-            LarkProjectConfig object = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+            LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+            List<String> spaceIds = larkAbstractClient.getWorkSpaceIdList();
+            if(!spaceIds.contains(larkProjectConfig.getSpaceId())){
+                MSPluginException.throwException("无效的空间id");
+            }
         } catch (Exception e) {
             LogUtil.error(e);
             MSPluginException.throwException(e.getMessage());

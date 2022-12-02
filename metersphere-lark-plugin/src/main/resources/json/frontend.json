@@ -47,14 +47,15 @@
   "projectConfig": {
     "formItems": [
       {
-        "name": "workspaceId",
+        "name": "spaceId",
         "type": "input",
         "defaultValue": "",
         "required": true,
         "i18n": false,
         "label": "空间id",
         "withProjectCheck": true,
-        "instructionsIcon": "/static/lark-key.png"
+        "instructionsIcon": "/static/lark-key.png",
+        "message": "请输入空间id"
       },
       {
         "name": "larkIssueTypeId",

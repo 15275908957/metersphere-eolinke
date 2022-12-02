@@ -1,11 +1,9 @@
+//import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import im.metersphere.plugin.utils.JSON;
 import io.metersphere.platform.api.Platform;
 import io.metersphere.platform.commons.URLEnum;
-import io.metersphere.platform.domain.GetOptionRequest;
-import io.metersphere.platform.domain.LarkConfig;
-import io.metersphere.platform.domain.PlatformRequest;
-import io.metersphere.platform.domain.SelectOption;
+import io.metersphere.platform.domain.*;
 import io.metersphere.platform.impl.LarkAbstractClient;
 import io.metersphere.platform.impl.LarkPlatform;
 import io.metersphere.platform.loader.PlatformPluginManager;
@@ -39,20 +37,22 @@ public class LarkClientTest {
 
     private String token;
 
+    public void a(){
+    }
 
     @Before
     public void loadClient() {
-//        PlatformRequest request = new PlatformRequest();
-//        LarkConfig larkConfig = new LarkConfig();
-//        larkConfig.setUrl("https://project.feishu.cn");
-//        larkConfig.setPluginId("MII_6368AC54F10B8002");
-//        larkConfig.setPluginSecret("91B7B426685F188A222D3F3CCACB491F");
-//        String inConfig = JSON.toJSONString(larkConfig);
-//        request.setIntegrationConfig(inConfig);
-//        client = new LarkPlatform(request);
         PlatformRequest request = new PlatformRequest();
-        request.setIntegrationConfig("{\"plugInId\":\"MII_6368AC54F10B8002\",\"LarkPlugin\":\"91B7B426685F188A222D3F3CCACB491F\",\"url\":\"https://project.feishu.cn\",\"pluginId\":\"MII_6368AC54F10B8002\",\"pluginSecret\":\"91B7B426685F188A222D3F3CCACB491F\",\"userKey\":\"61340112956145665\"}");
+        LarkConfig larkConfig = new LarkConfig();
+        larkConfig.setUrl("https://project.feishu.cn");
+        larkConfig.setPluginId("MII_6368AC54F10B8002");
+        larkConfig.setPluginSecret("91B7B426685F188A222D3F3CCACB491");
+        String inConfig = JSON.toJSONString(larkConfig);
+        request.setIntegrationConfig(inConfig);
         client = new LarkPlatform(request);
+//        PlatformRequest request = new PlatformRequest();
+//        request.setIntegrationConfig("{\"plugInId\":\"MII_6368AC54F10B8002\",\"LarkPlugin\":\"91B7B426685F188A222D3F3CCACB491F\",\"url\":\"https://project.feishu.cn\",\"pluginId\":\"MII_6368AC54F10B8002\",\"pluginSecret\":\"91B7B426685F188A222D3F3CCACB491F\",\"userKey\":\"61340112956145665\"}");
+//        client = new LarkPlatform(request);
     }
 
     @Test
@@ -72,13 +72,17 @@ public class LarkClientTest {
     }
 
     @Test
+    public void v() {
+        LarkProjectConfig larkProjectConfig = new LarkProjectConfig();
+        larkProjectConfig.setSpaceId("6364c89a48cdc29cab10c396");
+        client.validateProjectConfig(JSON.toJSONString(larkProjectConfig));
+    }
+
+    @Test
     public void getIssueTypes(){
-        String data = "{\"error\":{\"code\":0,\"msg\":\"success\",\"display_msg\":{\"title\":\"success\",\"content\":\"success\"}},\"data\":{\"expire_time\":1088,\"token\":\"p-aefdcfaf-7254-466b-8b29-82e4bdb95080\"}}";
-        int tokenindex = data.indexOf("token");
-        System.out.println(data.substring(126,164));
-//        GetOptionRequest getOptionRequest = new GetOptionRequest();
-//        getOptionRequest.setProjectConfig("6364c89a48cdc29cab10c396");
-//        List<SelectOption> selectOptions = client.getIssueTypes(getOptionRequest);
+        GetOptionRequest getOptionRequest = new GetOptionRequest();
+        getOptionRequest.setProjectConfig("6364c89a48cdc29cab10c396");
+        List<SelectOption> selectOptions = client.getIssueTypes(getOptionRequest);
 //        System.out.println(JSONObject.toJSONString(selectOptions));
     }
 }

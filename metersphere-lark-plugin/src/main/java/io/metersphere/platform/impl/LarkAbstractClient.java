@@ -1,6 +1,5 @@
 package io.metersphere.platform.impl;
 
-import io.metersphere.base.domain.User;
 import io.metersphere.platform.commons.ERRCODEEnum;
 import io.metersphere.platform.commons.URLEnum;
 import io.metersphere.platform.domain.*;
@@ -12,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,14 +38,10 @@ public class LarkAbstractClient extends BaseClient {
             HashMap<String,Object> queryBody = new HashMap<>();
             queryBody.put("user_keys", Arrays.asList(USER_KEY));
             HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(queryBody), headers);
-            response = restTemplate.exchange(getUrl(URLEnum.USER.getUrl()), HttpMethod.POST, requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.USER.getUrl()), URLEnum.USER.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
-            if (e.getRawStatusCode() == 401) {
-                MSPluginException.throwException("用户密钥错误");
-            } else {
-                LogUtil.error(e.getMessage(), e);
-                ERRCODEEnum.throwException(e.getResponseBodyAsString());
-            }
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
         } catch (Exception e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(e.getMessage());
@@ -62,12 +56,8 @@ public class LarkAbstractClient extends BaseClient {
         try {
             response = restTemplate.exchange(URL , HttpMethod.GET, getAuthHttpEntity(), String.class);
         } catch (HttpClientErrorException e) {
-            if (e.getRawStatusCode() == 401) {
-                MSPluginException.throwException("插件信息错误");
-            } else {
-                LogUtil.error(e.getMessage(), e);
-                MSPluginException.throwException(e.getMessage());
-            }
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
         } catch (Exception e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(e.getMessage());
@@ -104,20 +94,15 @@ public class LarkAbstractClient extends BaseClient {
 
     public void getToken(){
         ResponseEntity<String> response = null;
-        String url = getUrl(URLEnum.PLUGIN_TOKEN.getUrl());
         HashMap<String,Object> queryBody = new HashMap<>();
         queryBody.put("plugin_id",PLUGIN_ID);
         queryBody.put("plugin_secret",PLUGIN_SECRET);
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(queryBody), getAuthHeader());
         try {
-            response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.PLUGIN_TOKEN.getUrl()), URLEnum.PLUGIN_TOKEN.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
-            if (e.getRawStatusCode() == 401) {
-                MSPluginException.throwException("插件信息错误");
-            } else {
-                LogUtil.error(e.getMessage(), e);
-                MSPluginException.throwException(e.getMessage());
-            }
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
         } catch (Exception e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(e.getMessage());
@@ -126,34 +111,51 @@ public class LarkAbstractClient extends BaseClient {
             MSPluginException.throwException("测试连接失败，请检查Lark地址是否正确");
         }
         LarkResponseBase larkResponseBase = (LarkResponseBase)getResultForObject(LarkResponseBase.class, response);
-        LarkPluginToken larkPluginToken = (LarkPluginToken)larkResponseBase.getData();
+        LarkPluginToken larkPluginToken = JSON.parseObject(larkResponseBase.getDataStr(), LarkPluginToken.class);
         token = larkPluginToken.getToken();
-//        JSONObject jsonObject = JSONObject.parseObject(response.getBody());
-//        JSONObject jsonData = jsonObject.getJSONObject("data");
-//        token = jsonData.getString("token");
     }
 
     public List<LarkIssueType> getIssueTypes(String request) {
         ResponseEntity<String> response = null;
-        String url = getUrl(URLEnum.ISSUETYPES.getUrl(request));
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
         try {
-             response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+             response = restTemplate.exchange(getUrl(URLEnum.ISSUETYPES.getUrl(request)), URLEnum.ISSUETYPES.getHttpMethod(), requestEntity, String.class);
         } catch (Exception e) {
             LogUtil.error(e);
             MSPluginException.throwException(e.getMessage());
         }
-//        JSONObject jsonObject = JSONObject.parseObject(response.getBody());
-//        String jsonData = jsonObject.getString("data");
         LarkResponseBase larkResponseBase = (LarkResponseBase)getResultForObject(LarkResponseBase.class, response);
         List<LarkIssueType> larkIssueTypes = (List<LarkIssueType>)larkResponseBase.getData();
         return larkIssueTypes.stream().filter(i -> {
             return i.getIs_disable() == 2;
         }).collect(Collectors.toList());
     }
+
+    public List<String> getWorkSpaceIdList () {
+        ResponseEntity<String> response = null;
+        HttpHeaders headers = getAuthHeader();
+        headers.add("X-PLUGIN-TOKEN", token);
+        headers.add("X-USER-KEY", USER_KEY);
+        HashMap<String,Object> queryBody = new HashMap<>();
+        queryBody.put("user_key",USER_KEY);
+        HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(queryBody), headers);
+        try {
+            response = restTemplate.exchange(getUrl(URLEnum.PROJECTS.getUrl()), URLEnum.PROJECTS.getHttpMethod(), requestEntity, String.class);
+        } catch (HttpClientErrorException e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(e.getMessage());
+        }
+        LarkResponseBase larkResponseBase = (LarkResponseBase)getResultForObject(LarkResponseBase.class, response);
+        List<String> spaceIds = JSON.parseArray(larkResponseBase.getDataStr(), String.class);
+        return spaceIds;
+    }
+
 
 
 }

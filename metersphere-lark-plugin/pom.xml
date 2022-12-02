@@ -23,22 +23,34 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <groupId>io.metersphere</groupId>
+            <artifactId>metersphere-jira-plugin</artifactId>
+            <version>2.4.0</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.7</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>2.6</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
+<!--                        <descriptor>src/main/assembly/package.xml</descriptor>-->
                     </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>Main.Main</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>

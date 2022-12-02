@@ -6,6 +6,7 @@ import im.metersphere.plugin.utils.LogUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -101,7 +102,8 @@ public class PluginManager {
     public <T> T getImplInstance(String pluginId, Class<T> superClazz, Object param) {
         try {
             Class<T> clazz = getImplClass(pluginId, superClazz);
-            return clazz.getConstructor(param.getClass()).newInstance(param);
+            Constructor<T> c = clazz.getConstructor(param.getClass());
+            return c.newInstance(param);
         } catch (InvocationTargetException e) {
             LogUtil.error(e);
             MSPluginException.throwException(e.getTargetException());

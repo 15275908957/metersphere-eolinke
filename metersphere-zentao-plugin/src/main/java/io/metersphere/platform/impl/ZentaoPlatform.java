@@ -1,8 +1,8 @@
 package io.metersphere.platform.impl;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.base.domain.IssuesWithBLOBs;
 import io.metersphere.platform.api.AbstractPlatform;
 import io.metersphere.platform.client.ZentaoClient;
@@ -13,14 +13,9 @@ import io.metersphere.platform.domain.*;
 import io.metersphere.platform.utils.DateUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -260,15 +255,7 @@ public class ZentaoPlatform extends AbstractPlatform {
      * @return
      */
     public List<SelectOption> getUsers(GetOptionRequest request) {
-        String session = zentaoClient.login();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(httpHeaders);
-        RestTemplate restTemplate = new RestTemplate();
-        String getUser = zentaoClient.requestUrl.getUserGet();
-        ResponseEntity<String> responseEntity = restTemplate.exchange(getUser + session,
-                HttpMethod.GET, requestEntity, String.class);
-        String body = responseEntity.getBody();
-        Map obj = JSON.parseMap(body);
+        Map<String, Object> obj = zentaoClient.getUsers();
 
         LogUtil.info("zentao user " + obj);
 
@@ -427,17 +414,9 @@ public class ZentaoPlatform extends AbstractPlatform {
     public List<DemandDTO> getDemands(String projectConfigStr) {
         List<DemandDTO> list = new ArrayList<>();
         try {
-            String session = zentaoClient.login();
             ZentaoProjectConfig projectConfig = getProjectConfig(projectConfigStr);
-            HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(new HttpHeaders());
-            RestTemplate restTemplate = new RestTemplate();
-            String storyGet = zentaoClient.requestUrl.getStoryGet();
-            ResponseEntity<String> responseEntity = restTemplate.exchange(storyGet + session,
-                    HttpMethod.POST, requestEntity, String.class, projectConfig.getZentaoId());
-            String body = responseEntity.getBody();
-            Map obj = JSON.parseMap(body);
 
-            LogUtil.info("project story: " + projectConfig.getZentaoId() + obj);
+            Map<String, Object> obj = zentaoClient.getDemands(projectConfig.getZentaoId());
 
             if (obj != null) {
                 String data = obj.get("data").toString();
@@ -446,7 +425,7 @@ public class ZentaoPlatform extends AbstractPlatform {
                 }
                 // 兼容处理11.5版本格式 [{obj},{obj}]
                 if (data.charAt(0) == '[') {
-                    List array = (List) obj.get("data");
+                    List array = JSON.parseArray(data);
                     for (int i = 0; i < array.size(); i++) {
                         Map o = (Map) array.get(i);
                         DemandDTO demandDTO = new DemandDTO();
@@ -497,7 +476,7 @@ public class ZentaoPlatform extends AbstractPlatform {
                 }
             }
         } catch (Exception e) {
-            LogUtil.error("get zentao demand fail " + e.getMessage());
+            LogUtil.error("get zentao demand fail: ", e);
         }
         return list;
     }
@@ -608,6 +587,10 @@ public class ZentaoPlatform extends AbstractPlatform {
                 } else {
                     name = name.replaceAll("&amp;", "&");
                     path = path.replaceAll("&amp;", "&");
+                    if (path.contains("/")) {
+                        String[] split = path.split("/");
+                        path = "/" + split[split.length - 1];
+                    }
                 }
                 StringBuilder stringBuilder = new StringBuilder();
                 for (String item : path.split("&")) {

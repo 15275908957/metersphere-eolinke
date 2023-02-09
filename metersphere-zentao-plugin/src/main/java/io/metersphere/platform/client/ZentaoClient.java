@@ -1,8 +1,8 @@
 package io.metersphere.platform.client;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.platform.api.BaseClient;
 import io.metersphere.platform.domain.*;
 import io.metersphere.platform.utils.UnicodeConvertUtils;
@@ -11,7 +11,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.Map;
@@ -150,7 +149,21 @@ public abstract class ZentaoClient extends BaseClient {
         String sessionId = login();
         ResponseEntity<String> response = restTemplate.exchange(requestUrl.getBuildsGet(),
                 HttpMethod.GET, null, String.class, projectId, sessionId);
-        return (Map<String, Object>) JSON.parseMap(response.getBody()).get("data");
+        return (Map<String, Object>) JSON.parseMap((String) JSON.parseMap(response.getBody()).get("data"));
+    }
+
+    public Map<String, Object> getUsers() {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getUserGet() + sessionId,
+                HttpMethod.GET, null, String.class);
+        return (Map<String, Object>) JSON.parseMap(response.getBody());
+    }
+
+    public Map<String, Object> getDemands(String projectKey) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getStoryGet() + sessionId,
+                HttpMethod.GET, null, String.class, projectKey);
+        return (Map<String, Object>) JSON.parseMap(response.getBody());
     }
 
     public Map<String, Object> getBuildsV17(String projectId) {
@@ -167,7 +180,6 @@ public abstract class ZentaoClient extends BaseClient {
         MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
         paramMap.add("files", new FileSystemResource(file));
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, httpHeaders);
-        RestTemplate restTemplate = new RestTemplate();
         try {
             ResponseEntity<String> responseEntity = restTemplate.exchange(requestUrl.getFileUpload(), HttpMethod.POST, requestEntity,
                     String.class, null, sessionId);
@@ -279,7 +291,7 @@ public abstract class ZentaoClient extends BaseClient {
     }
 
     public ResponseEntity proxyForGet(String path, Class responseEntityClazz) {
-        im.metersphere.plugin.utils.LogUtil.info("zentao proxyForGet: " + path);
+        LogUtil.info("zentao proxyForGet: " + path);
         String url = this.ENDPOINT + path;
         validateProxyUrl(url, "/index.php", "/file-read-");
         return restTemplate.exchange(url, HttpMethod.GET, null, responseEntityClazz);

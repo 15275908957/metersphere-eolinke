@@ -1,18 +1,20 @@
 package io.metersphere.platform.client;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.platform.api.BaseClient;
 import io.metersphere.platform.domain.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +28,10 @@ public abstract class JiraAbstractClient extends BaseClient {
     protected  String USER_NAME;
 
     protected  String PASSWD;
+
+    protected  String TOKEN;
+
+    protected  String AUTH_TYPE;
 
     public JiraIssue getIssues(String issuesId) {
         LogUtil.info("getIssues: " + issuesId);
@@ -133,6 +139,12 @@ public abstract class JiraAbstractClient extends BaseClient {
         return ((JiraTransitionsResponse) getResultForObject(JiraTransitionsResponse.class, response)).getTransitions();
     }
 
+    public List<JiraSuggestions> getSprint() {
+        ResponseEntity<String> response = restTemplate.exchange(ENDPOINT + "/rest/greenhopper/1.0/sprint/picker", HttpMethod.GET, getAuthHttpEntity(), String.class);
+        List<JiraSuggestions> suggestions = ((JiraSprintResponse) getResultForObject(JiraSprintResponse.class, response)).getSuggestions();
+        return CollectionUtils.isEmpty(suggestions) ? new ArrayList<>() : suggestions;
+    }
+
     public void updateIssue(String id, String body) {
         LogUtil.info("addIssue: " + body);
         HttpHeaders headers = getAuthHeader();
@@ -210,6 +222,9 @@ public abstract class JiraAbstractClient extends BaseClient {
     }
 
     protected HttpHeaders getAuthHeader() {
+        if (StringUtils.isNotBlank(AUTH_TYPE) && StringUtils.equals(AUTH_TYPE, "bearer")) {
+            return getBearHttpHeaders(TOKEN);
+        }
         return getBasicHttpHeaders(USER_NAME, PASSWD);
     }
 
@@ -239,6 +254,8 @@ public abstract class JiraAbstractClient extends BaseClient {
         ENDPOINT = url;
         USER_NAME = config.getAccount();
         PASSWD = config.getPassword();
+        TOKEN = config.getToken();
+        AUTH_TYPE = config.getAuthType();
     }
 
     public JiraIssueListResponse getProjectIssues(Integer startAt, Integer maxResults, String projectKey, String issueType) {

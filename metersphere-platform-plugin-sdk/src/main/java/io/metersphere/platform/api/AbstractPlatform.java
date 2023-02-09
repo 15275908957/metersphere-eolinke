@@ -1,8 +1,8 @@
 package io.metersphere.platform.api;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.platform.constants.CustomFieldType;
 import io.metersphere.platform.domain.*;
 import org.apache.commons.lang3.StringUtils;
@@ -134,17 +134,14 @@ public abstract class AbstractPlatform implements Platform {
 
     protected List<PlatformCustomFieldItemDTO> syncIssueCustomFieldList(List<PlatformCustomFieldItemDTO> customFields, Map issue) {
         Set<String> names = issue.keySet();
-        customFields.forEach(item -> {
+        Iterator<PlatformCustomFieldItemDTO> iterator = customFields.iterator();
+        while (iterator.hasNext()) {
+            PlatformCustomFieldItemDTO item = iterator.next();
             String fieldName = item.getCustomData();
             Object value = issue.get(fieldName);
             if (value != null) {
                 if (value instanceof Map) {
                     item.setValue(getSyncJsonParamValue(value));
-                    if (StringUtils.equals(fieldName, "assignee")) {
-                        item.setValue(((Map) value).get("displayName"));
-                    } else {
-                        item.setValue(getSyncJsonParamValue(value));
-                    }
                 } else if (value instanceof List) {
                     // Sprint 是单选 同步回来是 JSONArray
                     if (StringUtils.equals(item.getType(), "select")) {
@@ -169,11 +166,14 @@ public abstract class AbstractPlatform implements Platform {
                     item.setValue(value);
                 }
             } else if (names.contains(fieldName)) {
-                if (item.getType().equals(CustomFieldType.CHECKBOX.getValue())) {
+                if (StringUtils.isNotBlank(item.getType()) && item.getType().equals(CustomFieldType.CHECKBOX.getValue())) {
                     item.setValue(new ArrayList<>());
                 } else {
                     item.setValue(null);
                 }
+            } else if (!this.isThirdPartTemplate) {
+                // 如果不是第三方模板，并且不是需要更新的模板字段，则去掉，否则空值会覆盖原字段的值
+                iterator.remove();
             } else {
                 try {
                     if (item.getValue() != null) {
@@ -183,7 +183,7 @@ public abstract class AbstractPlatform implements Platform {
                     LogUtil.error(e);
                 }
             }
-        });
+        }
         return customFields;
     }
 
@@ -306,7 +306,12 @@ public abstract class AbstractPlatform implements Platform {
             if (endpoint.endsWith("/")) {
                 endpoint = endpoint.substring(0, endpoint.length() - 1);
             }
-            path = " <img src=\"" + endpoint + path + "\"/>";
+            String format = " <img src=\"%s\"/>";
+            if (path.trim().startsWith("http")) {
+                path = String.format(format, path);
+            } else {
+                path = String.format(format, endpoint + path);
+            }
             result = matcher.replaceFirst(path);
             matcher = pattern.matcher(result);
         }
@@ -341,5 +346,13 @@ public abstract class AbstractPlatform implements Platform {
     @Override
     public List<PlatformStatusDTO> getTransitions(String projectConfig, String issueKey) {
         return this.getStatusList(projectConfig);
+    }
+
+    @Override
+    public void handleDemandUpdate(DemandUpdateRequest request) {
+    }
+
+    @Override
+    public void handleDemandUpdateBatch(DemandUpdateRequest request) {
     }
 }

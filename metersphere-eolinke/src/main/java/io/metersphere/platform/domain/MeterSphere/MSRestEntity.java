@@ -1,0 +1,20 @@
+package io.metersphere.platform.domain.MeterSphere;
+
+import lombok.Data;
+
+@Data
+public class MSRestEntity {
+    private String name;
+    private String value;
+    private String type;
+    private String files;
+    private String description;
+    private String contentType;
+    private boolean enable = true;
+    private boolean urlEncode;
+    private boolean required;
+    private String min;
+    private String max;
+    private boolean file;
+    private boolean valid;
+}

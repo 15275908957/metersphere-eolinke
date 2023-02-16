@@ -15,9 +15,9 @@ public class ThreadPool extends Thread {
         this.projectConfig = projectConfig;
     }
 
-    @Override
-    public void run() {
-        List<PlatformCustomFieldItemDTO> temp = larkPlatform.getThirdPartCustomFieldIO(projectConfig);
-        RedisSingleton.getInstance().setValue("getThirdPartCustomField", temp, larkPlatform.larkAbstractClient.PLUGIN_ID);
-    }
+//    @Override
+//    public void run() {
+//        List<PlatformCustomFieldItemDTO> temp = larkPlatform.getThirdPartCustomFieldIO(projectConfig);
+//        RedisSingleton.getInstance().setValue("getThirdPartCustomField", temp, larkPlatform.larkAbstractClient.PLUGIN_ID);
+//    }
 }

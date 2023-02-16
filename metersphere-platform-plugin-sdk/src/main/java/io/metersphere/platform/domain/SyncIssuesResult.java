@@ -14,6 +14,6 @@ import java.util.Map;
 public class SyncIssuesResult {
     private List<IssuesWithBLOBs> updateIssues = new ArrayList<>();
     private List<IssuesWithBLOBs> addIssues = new ArrayList<>();
-    private  Map<String, List<PlatformAttachment>> attachmentMap = new HashMap<>();
+    private Map<String, List<PlatformAttachment>> attachmentMap = new HashMap<>();
     private List<String> deleteIssuesIds = new ArrayList<>();
 }

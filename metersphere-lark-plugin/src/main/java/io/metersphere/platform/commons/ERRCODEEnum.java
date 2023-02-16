@@ -1,7 +1,7 @@
 package io.metersphere.platform.commons;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
+
+import io.metersphere.plugin.utils.JSON;
 
 import java.util.Map;
 
@@ -139,6 +139,8 @@ public enum ERRCODEEnum {
         }
         return message;
     }
+
+//    public static String getCode
 
 
     public static String getCodeInfoByCode(int code){

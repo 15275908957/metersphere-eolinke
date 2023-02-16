@@ -18,13 +18,13 @@ public class Main {
 
         FileInputStream in = new FileInputStream(jiraPath);
 
-        try {
-            pluginManager
-                    .loadJar("JIRA", in, new LocalStorageStrategy("D://plugin" + "/JIRA"));
-            pluginManager.getClassLoader("JIRA").getStorageStrategy().delete();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            pluginManager
+//                    .loadJar("JIRA", in, new LocalStorageStrategy("D://plugin" + "/JIRA"));
+//            pluginManager.getClassLoader("JIRA").getStorageStrategy().delete();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         GetOptionRequest getOptionRequest = new GetOptionRequest();
         getOptionRequest.setOptionMethod("getIssueTypes");

@@ -12,7 +12,7 @@ import io.metersphere.platform.constants.AttachmentSyncType;
 import io.metersphere.platform.constants.CustomFieldType;
 import io.metersphere.platform.domain.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;

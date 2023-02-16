@@ -1,0 +1,107 @@
+{
+  "serviceIntegration": {
+    "label": "PingCode",
+    "image": "/static/index.png",
+    "tips": "使用指引：<br> 1. 获取企业令牌时，需要提供client_id和client_secret， 您可以在PingCode企业后台的凭据管理中创建一个应用，配置数据范围，然后拿到client_id和client_secret <br> 2.删除PingCode的应用或重置应用的Secret都会导致access_token失效 马上关联项目 <br> 3. 添加你的个人平台账号 马上添加",
+    "formItems": [
+      {
+        "name": "clientId",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "label": "客户端ID",
+        "message": "客户端ID",
+        "instructionsIcon": "/static/获取凭据.png"
+      },
+      {
+        "name": "clientSecret",
+        "type": "password",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "label": "客户端密码",
+        "message": "客户端密码",
+        "instructionsIcon": "/static/获取凭据.png"
+      },
+      {
+        "name": "url",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "label": "url地址",
+        "message": "url地址"
+      }
+    ]
+  },
+  "projectConfig": {
+    "formItems": [
+      {
+        "name": "pingCodeKey",
+        "type": "input",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "label": "PingCode 项目ID",
+        "withProjectCheck": true,
+        "instructionsIcon": "/static/获取项目id.png"
+      },
+      {
+        "name": "paramNames",
+        "type": "textarea",
+        "defaultValue": "[{\"name\":\"标题\",\"required\":false,\"defaultValue\":\"默认值\"}]",
+        "required": true,
+        "i18n": true,
+        "label": "所有字段和排序"
+      },
+      {
+        "name": "pingCodeIssueTypeId",
+        "type": "select",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "cascade": "pingCodeKey",
+        "optionMethod": "getIssueTypes",
+        "label": "缺陷类型"
+      },
+      {
+        "name": "pingCodeStoryTypeId",
+        "type": "select",
+        "defaultValue": "",
+        "required": true,
+        "i18n": true,
+        "cascade": "pingCodeKey",
+        "optionMethod": "getIssueTypes",
+        "label": "需求类型"
+      }
+    ]
+  },
+  "accountConfig": {
+    "label": "PingCode 信息",
+    "instructionsInfo": "该信息为通过PingCode提交缺陷的用户认证信息，若未填写，则使用工作空间中配置的默认信息",
+    "i18n": true,
+    "formItems": [
+      {
+        "name": "clientId",
+        "type": "input",
+        "defaultValue": "",
+        "required": false,
+        "i18n": true,
+        "label": "客户端ID",
+        "message": "客户端ID",
+        "instructionsIcon": "/static/获取凭据.png"
+      },
+      {
+        "name": "clientSecret",
+        "type": "password",
+        "defaultValue": "",
+        "required": false,
+        "i18n": true,
+        "label": "密钥",
+        "message": "密钥",
+        "instructionsIcon": "/static/获取凭据.png"
+      }
+    ]
+  }
+}

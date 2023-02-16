@@ -189,6 +189,7 @@ public abstract class JiraAbstractClient extends BaseClient {
         MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
         FileSystemResource fileResource = new FileSystemResource(file);
         paramMap.add("file", fileResource);
+
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, authHeader);
         try {
             restTemplate.exchange(getBaseUrl() + "/issue/" + issueKey + "/attachments", HttpMethod.POST, requestEntity, String.class);

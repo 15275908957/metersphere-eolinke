@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>metersphere-platform-plugin-sdk</artifactId>
     <groupId>io.metersphere</groupId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,7 +18,13 @@
         <dependency>
             <groupId>io.metersphere</groupId>
             <artifactId>metersphere-plugin-sdk</artifactId>
-            <version>1.2.0</version>
+            <version>1.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
         </dependency>
 
         <dependency>

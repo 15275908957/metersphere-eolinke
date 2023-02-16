@@ -78,7 +78,7 @@ public class RedisSingleton {
         Jedis jedis = getJedis();
         try{
             //存储一个值，时间结束后自动删除
-            long time = 1000 * 60 * 60 * 24;
+            int time = 1000 * 60 * 60 * 24;
             LarkRedisPCFID larkRedisPCFID = new LarkRedisPCFID();
             larkRedisPCFID.setTime(new Date().getTime());
             larkRedisPCFID.setPlatformCustomFieldItemDTOList(object);

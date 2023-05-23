@@ -5,14 +5,14 @@ import java.io.*;
 public class UseFile {
 
     //把文件转为byte数组
-    public byte[] InputStream2ByteArray(String filePath) throws IOException {
+    public static byte[] InputStream2ByteArray(String filePath) throws IOException {
         InputStream in = new FileInputStream(filePath);
         byte[] data = toByteArray(in);
         in.close();
         return data;
     }
 
-    private byte[] toByteArray(InputStream in) throws IOException {
+    private static byte[] toByteArray(InputStream in) throws IOException {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024 * 4];

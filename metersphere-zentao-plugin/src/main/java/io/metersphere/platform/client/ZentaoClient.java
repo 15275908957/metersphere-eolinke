@@ -1,5 +1,6 @@
 package io.metersphere.platform.client;
 
+import com.alibaba.fastjson2.JSONObject;
 import io.metersphere.plugin.exception.MSPluginException;
 import io.metersphere.plugin.utils.JSON;
 import io.metersphere.plugin.utils.LogUtil;
@@ -13,8 +14,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class ZentaoClient extends BaseClient {
 
@@ -156,6 +156,182 @@ public abstract class ZentaoClient extends BaseClient {
         String sessionId = login();
         ResponseEntity<String> response = restTemplate.exchange(requestUrl.getUserGet() + sessionId,
                 HttpMethod.GET, null, String.class);
+        return (Map<String, Object>) JSON.parseMap(response.getBody());
+    }
+
+    public Map<String, Object> createCaseModule(String rootID, String type, String modules, Object parentModuleID){
+        String sessionId = login();
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        paramMap.add("modules[]",modules);
+        paramMap.add("parentModuleID", parentModuleID);
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, new HttpHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getCreateModule() + sessionId,
+                HttpMethod.POST, requestEntity, String.class, rootID, type);
+        return (Map<String, Object>) JSON.parseMap(response.getBody());
+    }
+
+
+    public String updateTestcase(MSCase msCase, List<FromData> list){
+        String sessionId = login();
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        for(FromData item : list){
+            paramMap.add(item.getKey(), item.getValue());
+        }
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, new HttpHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getUpdateTestcase() + sessionId,
+                HttpMethod.POST, requestEntity, String.class, msCase.getZentaoId());
+        return response.getBody();
+    }
+
+    public String setMenu(Object projectID, String sessionId){
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, new HttpHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getSetMenu() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, projectID);
+        return response.getBody();
+    }
+
+    public String getByID(Object projectID, String sessionId){
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, new HttpHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getGetByID() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, projectID);
+        return response.getBody();
+    }
+
+    public String saveState(Object projectID, Object executions,  String sessionId){
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie","tab=execution;");
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(new LinkedMultiValueMap<>(), headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getSaveState() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, projectID, executions);
+        return response.getBody();
+    }
+
+
+    public String createTestcase(Integer executionID,Object productID,Integer projectID, List<FromData> list, Integer moduleId){
+          String sessionId = login();
+          ajaxGet(productID, moduleId, sessionId);
+//        linked2project("user", "1", "login", "", projectID, sessionId);
+//        String bb = setMenu(projectID, sessionId);
+//        String aa = executionTestcase(projectID, sessionId);
+//        String id = getByID(15, sessionId);
+          String proSi = setProjectSession(executionID, sessionId);
+//        String state = saveState(productID, Arrays.asList(aa), sessionId);
+//        linked2project("case", "2", "Opened", "", projectID, sessionId);
+//        String a = getRelatedFields("case", 3+"", "linked2execution",  projectID, sessionId);
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        for(FromData item : list){
+            paramMap.add(item.getKey(), item.getValue());
+        }
+        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Cookie","tab=execution;");
+        headers.add("Cookie","tab=project;");
+        headers.add("Cookie","lastCaseModule="+moduleId+";");
+//        headers.add("Cookie", "lastProject=13;");
+//        headers.add("Cookie", "project=13;");
+//        headers.add("session","project=13");
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getCreateTestcase() + sessionId,
+                HttpMethod.POST, requestEntity, String.class,productID, moduleId);
+        JSONObject jsonObject = JSONObject.parseObject(response.getBody());
+        String caseId = jsonObject.getString("id");
+//        String linked2project = linked2project("case", caseId, "linked2project", "", projectID, sessionId);
+//        String Opened = linked2project("case", caseId, "Opened", "", projectID, sessionId);
+//        String linked2project = linked2project("case", caseId, "linked2execution", "", projectID, sessionId);
+//        String bbbb = setMenu(projectID, sessionId);
+//            System.out.println(response);
+        return response.getBody();
+    }
+
+    public String executionTestcase(Integer projectID, String sessionId){
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getExecutionTestcase() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, projectID);
+        return response.getBody();
+    }
+
+    public String setProjectSession(Integer executionID, String sessionId){
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Cookie","tab=project;");
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getSetProjectSession() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, executionID);
+        return response.getBody();
+    }
+
+    public String linked2project(String type, String caseID, String functionType, String temp, Integer projectID, String sessionId) {
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getLinked2project() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, type, caseID, functionType, temp, projectID);
+        return response.getBody();
+    }
+
+    public String getRelatedFields(String objectType, String objectID, String actionType, Integer extra, String sessionId){
+        MultiValueMap<String, Object> paramMap = new LinkedMultiValueMap<>();
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(paramMap, headers);
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getRelatedFields() + sessionId,
+                HttpMethod.GET, requestEntity, String.class, objectType, objectID, actionType, extra);
+        return response.getBody();
+    }
+
+//    public Map<String, String> getModuleListByType(String type) {
+//        String sessionId = login();
+//        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getGetModuleListByType() + sessionId,
+//                HttpMethod.GET, null, String.class, type);
+//        return (Map<String, String>) JSON.parseMap(response.getBody());
+//    }
+
+    public String getTestCaseView(String caseId) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getTestcaseView() + sessionId,
+                HttpMethod.GET, null, String.class, caseId);
+        return JSON.toJSONString(response.getBody());
+    }
+
+
+
+    public Map<String, String> getProjectTree(String productID) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getGetTreeProject() + sessionId,
+                HttpMethod.GET, null, String.class, productID);
+        return (Map<String, String>) JSON.parseMap(response.getBody());
+    }
+
+    public String ajaxGet(Object productID, Integer moduleId, String sessionId) {
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getAjaxGetProductStories() + sessionId,
+                HttpMethod.GET, null, String.class, productID, moduleId);
+        return JSON.toJSONString(response.getBody());
+    }
+
+
+    public Map<String, String> getTree(String productID) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getTreeBrowse() + sessionId,
+                HttpMethod.GET, null, String.class, productID);
+        return (Map<String, String>) JSON.parseMap(response.getBody());
+    }
+
+    public Map<String, Object> getTreeMenu(String root, String productId) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getGetTreeMeun() + sessionId,
+                HttpMethod.GET, null, String.class, root, productId);
+        return (Map<String, Object>) JSON.parseMap(response.getBody());
+    }
+
+
+
+    public Map<String, Object> getTestCase(String productID, Integer projectID) {
+        String sessionId = login();
+        ResponseEntity<String> response = restTemplate.exchange(requestUrl.getGetTestCase() + sessionId,
+                HttpMethod.GET, null, String.class, productID, projectID);
         return (Map<String, Object>) JSON.parseMap(response.getBody());
     }
 

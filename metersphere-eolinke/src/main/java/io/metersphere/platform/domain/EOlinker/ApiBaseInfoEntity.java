@@ -1,5 +1,7 @@
 package io.metersphere.platform.domain.EOlinker;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -25,15 +27,15 @@ public class ApiBaseInfoEntity {
     private String afterInject;
     private Long groupId;
 
-    public String getApiNote(){
+    public String getApiNote() {
         return StringEscapeUtils.unescapeXml(this.apiNote);
     }
 
-    public String getApiRequestRaw(){
+    public String getApiRequestRaw() {
         return StringEscapeUtils.unescapeXml(this.apiRequestRaw);
     }
 
-    public String getApiName(){
+    public String getApiName() {
         return StringEscapeUtils.unescapeXml(this.apiName);
     }
 }

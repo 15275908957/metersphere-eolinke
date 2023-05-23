@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="30b4eaa0-3f3b-448f-91db-5b614874edbe" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/commons/PriLevelMapping.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/FromData.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/GetTestCaseResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/MSCase.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/MSCaseStep.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/MSModule.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/impl/ZentaoCasePlatform.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/utils/JSONUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/utils/UseFile.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/test/java/ZentaoClientTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-eolinke/src/main/java/io/metersphere/platform/domain/EOlinker/ApiBaseInfoEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-eolinke/src/main/java/io/metersphere/platform/domain/EOlinker/ApiBaseInfoEntity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-eolinke/src/main/java/io/metersphere/platform/utils/UseFile.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-eolinke/src/main/java/io/metersphere/platform/utils/UseFile.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-pingcode-plugin/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-pingcode-plugin/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-pingcode-plugin/src/main/java/io/metersphere/platform/Utils/RedisUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-pingcode-plugin/src/main/java/io/metersphere/platform/Utils/RedisUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-pingcode-plugin/src/main/test/java/pingcodeClientTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-pingcode-plugin/src/main/test/java/pingcodeClientTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-platform-plugin-sdk/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-platform-plugin-sdk/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-plugin-sdk/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-plugin-sdk/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-zentao-plugin/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/client/ZentaoClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/client/ZentaoClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/client/ZentaoPathInfoClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/client/ZentaoPathInfoClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/RequestUrl.java" beforeDir="false" afterPath="$PROJECT_DIR$/../metersphere-zentao-plugin/src/main/java/io/metersphere/platform/domain/RequestUrl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../pom.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2NGaviffBAw5ThOPMBLphztbmyF" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="30b4eaa0-3f3b-448f-91db-5b614874edbe" name="Default Changelist" comment="" />
+      <created>1679293111153</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1679293111153</updated>
+      <workItem from="1679293113000" duration="9000" />
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

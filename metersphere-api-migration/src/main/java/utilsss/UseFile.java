@@ -1,8 +1,24 @@
-package io.metersphere.platform.utils;
+package utilsss;
 
 import java.io.*;
 
 public class UseFile {
+
+    public static void writeTxt(String fileName, String content){
+        try {
+            File file = new File(fileName);
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            FileWriter fileWriter = new FileWriter(file.getAbsoluteFile());
+            BufferedWriter bw = new BufferedWriter(fileWriter);
+            bw.write(content);
+            bw.close();
+            System.out.println("finish");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     //把文件转为byte数组
     public byte[] InputStream2ByteArray(String filePath) throws IOException {
@@ -77,9 +93,11 @@ public class UseFile {
         return str;
     }
 
-    public static void writeTxt(String fileName, String content){
+    public static void writeTxt(String path ,String fileName, String content){
         try {
-            File file = new File(fileName);
+            File file = new File(path);
+            file.mkdirs();
+            file = new File(path+"/"+fileName);
             if(!file.exists()){
                 file.createNewFile();
             }
@@ -92,6 +110,4 @@ public class UseFile {
             e.printStackTrace();
         }
     }
-
-
 }

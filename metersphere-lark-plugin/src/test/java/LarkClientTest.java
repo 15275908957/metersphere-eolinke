@@ -1,25 +1,18 @@
 
-import com.lark.oapi.Client;
-import com.lark.oapi.core.response.RawResponse;
-import com.lark.oapi.core.token.AccessTokenType;
-import com.lark.oapi.core.utils.Jsons;
-import com.lark.oapi.service.docx.v1.model.CreateDocumentReq;
-import com.lark.oapi.service.docx.v1.model.CreateDocumentReqBody;
-import com.lark.oapi.service.docx.v1.model.CreateDocumentResp;
-import com.lark.oapi.service.im.v1.enums.MsgTypeEnum;
-import com.lark.oapi.service.im.v1.model.ext.MessageText;
-import io.metersphere.platform.api.AbstractPlatform;
+
+import io.metersphere.platform.api.Platform;
 import io.metersphere.platform.domain.*;
 import io.metersphere.platform.impl.*;
+import io.metersphere.platform.loader.PlatformPluginManager;
 import io.metersphere.plugin.utils.JSON;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class LarkClientTest {
@@ -123,43 +116,11 @@ public class LarkClientTest {
 
     @Test
     public void test01() {
-//        //连接redis 必须保证redis服务可以远程连接
-//        //Jedis 把每个redis命令封装成对应的方法
-//        Jedis jedis = new Jedis("10.1.12.13", 6379);
-//        jedis.auth("Password123@redis");
-//        //对字符串的操作
-//        //存储一个值
-//        String s = jedis.set("k1", "v1");
-//        System.out.println("返回的结果:" + s);
-//        //存储一个值，时间结束后自动删除
-//        String setex = jedis.setex("k2", 30l, "v2");
-//        System.out.println("返回的结果:" + setex);
-//        //存储一个值，若已存在则不存
-//        Long aLong = jedis.setnx("k3", "v3");
-//        System.out.println("返回的结果:" + aLong);
-//
-//        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-//
-//        //对hash操作
-//        Long hset = jedis.hset("k4", "name", "张三");
-//        System.out.println("返回的值:" + hset);
-//
-//        Map<String, String> map = new HashMap<>();
-//        map.put("name", "李四");
-//        Long hset1 = jedis.hset("k5", map);
-//        System.out.println(hset1);
-//
-//        //关闭
-//        jedis.close();
+
     }
     @Test
     public void ttt() {
-        String daata = "\"{\\\"data\\\":[{\\\"default_value\\\":{\\\"default_appear\\\":1,\\\"value\\\":null},\\\"field_alias\\\":\\\"description\\\",\\\"field_key\\\":\\\"description\\\",\\\"field_name\\\":\\\"缺陷描述\\\",\\\"field_type_key\\\":\\\"multi_text\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":1,\\\"value\\\":\\\"\\\"},\\\"field_alias\\\":\\\"name\\\",\\\"field_key\\\":\\\"name\\\",\\\"field_name\\\":\\\"缺陷名称\\\",\\\"field_type_key\\\":\\\"text\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":2,\\\"value\\\":null},\\\"field_alias\\\":\\\"owner\\\",\\\"field_key\\\":\\\"owner\\\",\\\"field_name\\\":\\\"创建者\\\",\\\"field_type_key\\\":\\\"user\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":2,\\\"value\\\":null},\\\"field_alias\\\":\\\"start_time\\\",\\\"field_key\\\":\\\"start_time\\\",\\\"field_name\\\":\\\"提出时间\\\",\\\"field_type_key\\\":\\\"date\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":2,\\\"value\\\":null},\\\"field_alias\\\":\\\"current_status_operator\\\",\\\"field_key\\\":\\\"current_status_operator\\\",\\\"field_name\\\":\\\"当前负责人\\\",\\\"field_type_key\\\":\\\"multi_user\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":2,\\\"value\\\":null},\\\"field_alias\\\":\\\"updated_at\\\",\\\"field_key\\\":\\\"updated_at\\\",\\\"field_name\\\":\\\"更新时间\\\",\\\"field_type_key\\\":\\\"date\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"},{\\\"default_value\\\":{\\\"default_appear\\\":2,\\\"value\\\":null},\\\"field_alias\\\":\\\"multi_attachment\\\",\\\"field_key\\\":\\\"multi_attachment\\\",\\\"field_name\\\":\\\"多个附件\\\",\\\"field_type_key\\\":\\\"multi_file\\\",\\\"is_required\\\":2,\\\"is_validity\\\":1,\\\"is_visibility\\\":1,\\\"label\\\":\\\"\\\"}],\\\"err\\\":{},\\\"err_code\\\":0,\\\"err_msg\\\":\\\"\\\"}\"";
-//        String dd = "{\"data\":\"ee\",\"err\":{},\"err_code\":0,\"err_msg\":\"\"}";
-        String dd = "{\"data\":[{\"default_value\":{\"default_appear\":1,\"value\":null},\"field_alias\":\"description\",\"field_key\":\"description\",\"field_name\":\"缺陷描述\",\"field_type_key\":\"multi_text\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":1,\"value\":\"\"},\"field_alias\":\"name\",\"field_key\":\"name\",\"field_name\":\"缺陷名称\",\"field_type_key\":\"text\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":2,\"value\":null},\"field_alias\":\"owner\",\"field_key\":\"owner\",\"field_name\":\"创建者\",\"field_type_key\":\"user\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":2,\"value\":null},\"field_alias\":\"start_time\",\"field_key\":\"start_time\",\"field_name\":\"提出时间\",\"field_type_key\":\"date\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":2,\"value\":null},\"field_alias\":\"current_status_operator\",\"field_key\":\"current_status_operator\",\"field_name\":\"当前负责人\",\"field_type_key\":\"multi_user\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":2,\"value\":null},\"field_alias\":\"updated_at\",\"field_key\":\"updated_at\",\"field_name\":\"更新时间\",\"field_type_key\":\"date\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"},{\"default_value\":{\"default_appear\":2,\"value\":null},\"field_alias\":\"multi_attachment\",\"field_key\":\"multi_attachment\",\"field_name\":\"多个附件\",\"field_type_key\":\"multi_file\",\"is_required\":2,\"is_validity\":1,\"is_visibility\":1,\"label\":\"\"}],\"err\":{},\"err_code\":0,\"err_msg\":\"\"}";
-//        LarkResponseBase larkResponseBase = JSON.parseObject(dd, LarkResponseBase.class);
-//        Map<String , String> larkResponseBase = JSON.parseMap(dd);
-//        System.out.println(larkResponseBase);
+
     }
 
     @Test

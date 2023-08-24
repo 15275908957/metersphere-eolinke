@@ -184,6 +184,7 @@ public class LarkAbstractClient extends BaseClient {
     protected HttpHeaders getAuthHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.ACCEPT_ENCODING,"qzip,x-qzip,deflate");
         return headers;
     }
 
@@ -214,6 +215,10 @@ public class LarkAbstractClient extends BaseClient {
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(queryBody), getAuthHeader());
         try {
             response = restTemplate.exchange(getUrl(URLEnum.PLUGIN_TOKEN.getUrl()), URLEnum.PLUGIN_TOKEN.getHttpMethod(), requestEntity, String.class);
+            LogUtil.info("getUrl:"+getUrl(URLEnum.PLUGIN_TOKEN.getUrl()));
+            LogUtil.info("getHttpMethod:"+URLEnum.PLUGIN_TOKEN.getHttpMethod());
+            LogUtil.info("queryBody:"+JSON.toJSONString(queryBody));
+            LogUtil.info("queryBody:"+JSON.toJSONString(requestEntity));
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -224,6 +229,8 @@ public class LarkAbstractClient extends BaseClient {
         if (StringUtils.isBlank(response.getBody())) {
             MSPluginException.throwException("测试连接失败，请检查Lark地址是否正确");
         }
+        LogUtil.info("response:"+JSON.toJSONString(response));
+        System.out.println("response:"+JSON.toJSONString(response));
         LarkResponseBase larkResponseBase = (LarkResponseBase)getResultForObject(LarkResponseBase.class, response);
         LarkPluginToken larkPluginToken = JSON.parseObject(larkResponseBase.getDataStr(), LarkPluginToken.class);
         token = larkPluginToken.getToken();

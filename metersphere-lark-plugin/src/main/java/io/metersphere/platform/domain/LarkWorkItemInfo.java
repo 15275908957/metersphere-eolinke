@@ -35,35 +35,6 @@ public class LarkWorkItemInfo {
     public String getMSId(){
         return this.project_key + "_" + this.id;
     }
-//    public IssuesWithBLOBs toIssuesWithBLOB(String userKey, Map<String, LarkSimpleField> larkSimpleFieldMap) {
-//        IssuesWithBLOBs issues = new IssuesWithBLOBs();
-//        issues.setId(getMSId());
-//        issues.setPlatformId(getMSId());
-//        issues.setPlatform("Lark");
-//        issues.setUpdateTime(updated_at);
-//        issues.setCreateTime(created_at);
-//        HashMap<String, LarkFieldValuePairs> map = new HashMap<>();
-//        for(LarkFieldValuePairs item : fields){
-//            map.put(item.getField_key(), item);
-//        }
-//        List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOs = new ArrayList<>();
-//        for(LarkFieldValuePairs item : fields){
-//            LarkSimpleField larkSimpleField = larkSimpleFieldMap.get(item.getField_key());
-//            if(larkSimpleField == null){
-//                //需做特殊处理的字段
-//                continue;
-//            }else{
-//                PlatformCustomFieldItemDTO platformCustomFieldItemDTO = new PlatformCustomFieldItemDTO();
-//                platformCustomFieldItemDTO.setCustomData(item.getField_key());
-//                platformCustomFieldItemDTO.setName(larkSimpleField.getField_name());
-//                platformCustomFieldItemDTO.setType(FieldTypeMapping.getMsTypeBylarkType(item.getField_type_key()));
-//                setValue(item, platformCustomFieldItemDTO, userKey);
-//                platformCustomFieldItemDTOs.add(platformCustomFieldItemDTO);
-//            }
-//        }
-//        issues.setCustomFields(JSON.toJSONString(platformCustomFieldItemDTOs));
-//        return issues;
-//    }
     public IssuesWithBLOBs toIssuesWithBLOB(String userKey, List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOs) {
         IssuesWithBLOBs issues = new IssuesWithBLOBs();
         issues.setId(getMSId());

@@ -46,10 +46,10 @@ public class LarkClientTest {
         PlatformRequest request = new PlatformRequest();
 
         larkConfig.setUrl("https://project.feishu.cn");
-        larkConfig.setPluginId("MII_63C4D9A1E1C14003");
-        larkConfig.setPluginSecret("ADEC309FEF445FD40ED830976C2E7FB5");
-        larkConfig.setUserKey("7152532929715896348");
-        larkConfig.setSpaceId("617907a1c6bbf993652cb1d8");
+        larkConfig.setPluginId("MII_652515C12C0E4004");
+        larkConfig.setPluginSecret("66E3AC84B81809961190008AEC9C216F");
+        larkConfig.setUserKey("7241406358686416900");
+//        larkConfig.setSpaceId("650bab169b4ea5d284b5c5c9");
         String inConfig = JSON.toJSONString(larkConfig);
         request.setIntegrationConfig(inConfig);
         client = new LarkPlatform(request);
@@ -83,8 +83,9 @@ public class LarkClientTest {
         larkSearchGroup.setConjunction("AND");
         LarkSearchParam larkSearchParam = new LarkSearchParam();
         larkSearchParam.setOperator("HAS ANY OF");
+        //制定需求下的缺陷
         larkSearchParam.setParam_key("_field_linked_story");
-        larkSearchParam.setValue(Arrays.asList(1142750));
+        larkSearchParam.setValue(Arrays.asList(181477));
         larkSearchGroup.getSearch_params().add(larkSearchParam);
         larkWorkItemRequest.setSearch_group(larkSearchGroup);
 //        List<PlatformCustomFieldItemDTO> temp = client.getThirdPartCustomFieldIO(JSON.toJSONString(larkConfig));
@@ -95,24 +96,27 @@ public class LarkClientTest {
     @Test
     public void tGWI(){
         LarkProjectConfig larkProjectConfig =  new LarkProjectConfig();
-//        larkProjectConfig.setDemandId("1142750");
-        LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-        List<LarkWorkItemInfo> larkWorkItemInfos = client.larkAbstractClient.getWorkItemAll(workItemRequest);
-        client.checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
-        System.out.println(larkWorkItemInfos);
+        larkProjectConfig.setSpaceId("650bab169b4ea5d284b5c5c9");
+        LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
+        //根据空间查询制定工作项
+        List<LarkWorkItemInfo> larkWorkItemInfos = client.larkAbstractClient.getWorkItemAll(workItemRequest,larkProjectConfig);
+//        client.checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
+        System.out.println(JSON.toJSONString(larkWorkItemInfos));
     }
 
     @Test
     public void tSWI(){
-//        LarkProjectConfig larkProjectConfig =  new LarkProjectConfig();
+        LarkProjectConfig larkProjectConfig =  new LarkProjectConfig();
 //        larkProjectConfig.setDemandId("1142750");
 //        LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
         LarkSearchWorkItemRequest workItemRequest = new LarkSearchWorkItemRequest();
         workItemRequest.setPage_num(1l);
 //        workItemRequest.setSearch_group();
+        //查询指定需求关联下的缺陷
         List<LarkWorkItemInfo> larkWorkItemInfos = client.larkAbstractClient.searchWorkItem(workItemRequest,"issue");
         System.out.println(larkWorkItemInfos);
     }
+
 
     @Test
     public void test01() {

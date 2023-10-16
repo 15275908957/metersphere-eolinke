@@ -27,7 +27,7 @@ public class LarkAbstractClient extends BaseClient {
 
     protected String USER_KEY;
 
-    protected String SPACEID;
+//    protected String SPACEID;
 
     protected String token;
 
@@ -76,10 +76,22 @@ public class LarkAbstractClient extends BaseClient {
         }
     }
 
-    public void checkSpaceId() {
+//    public void checkSpaceId() {
+//        try {
+//            List<String> spaceIds = getWorkSpaceIdList();
+//            if(!spaceIds.contains(SPACEID)){
+//                MSPluginException.throwException("无效的空间id");
+//            }
+//        } catch (Exception e) {
+//            LogUtil.error(e);
+//            MSPluginException.throwException(e.getMessage());
+//        }
+//    }
+
+    public void checkSpaceId(String spaceId) {
         try {
             List<String> spaceIds = getWorkSpaceIdList();
-            if(!spaceIds.contains(SPACEID)){
+            if(!spaceIds.contains(spaceId)){
                 MSPluginException.throwException("无效的空间id");
             }
         } catch (Exception e) {
@@ -200,7 +212,7 @@ public class LarkAbstractClient extends BaseClient {
         PLUGIN_ID = config.getPluginId();
         PLUGIN_SECRET = config.getPluginSecret();
         USER_KEY = config.getUserKey();
-        SPACEID = config.getSpaceId();
+//        SPACEID = config.getSpaceId();
 //        restTemplate = BaseClient();
         getToken();
     }
@@ -255,8 +267,8 @@ public class LarkAbstractClient extends BaseClient {
         }).collect(Collectors.toList());
     }
 
-    public Map<String, LarkFieldConf> getThirdPartCustomFieldMap() {
-        List<LarkFieldConf> larkFieldConfList = getThirdPartCustomField();
+    public Map<String, LarkFieldConf> getThirdPartCustomFieldMap(String projectConfig) {
+        List<LarkFieldConf> larkFieldConfList = getThirdPartCustomField(JSON.parseObject(projectConfig,LarkProjectConfig.class));
         Map<String, LarkFieldConf> larkFieldConfMap = new HashMap<>();
         for(LarkFieldConf item:larkFieldConfList){
             larkFieldConfMap.put(item.getField_key(),item);
@@ -264,7 +276,7 @@ public class LarkAbstractClient extends BaseClient {
         return larkFieldConfMap;
     }
 
-    public List<LarkFieldConf> getThirdPartCustomField() {
+    public List<LarkFieldConf> getThirdPartCustomField(LarkProjectConfig projectConfig) {
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
@@ -275,7 +287,7 @@ public class LarkAbstractClient extends BaseClient {
 //        Map<String, String> map =  JSON.parseMap(projectConfig);
 //        String spaceId = map.get("spaceId");
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.GET_TEMPLATE.getUrl(SPACEID)), URLEnum.GET_TEMPLATE.getHttpMethod(), requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.GET_TEMPLATE.getUrl(projectConfig.getSpaceId())), URLEnum.GET_TEMPLATE.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -288,8 +300,8 @@ public class LarkAbstractClient extends BaseClient {
         return larkSimpleFields;
     }
 
-    public List<LarkUserInfo> getTameUserInfoList() {
-        List<LarkTeam> larkTeamList = getTameUserList();
+    public List<LarkUserInfo> getTameUserInfoList(LarkProjectConfig projectConfig) {
+        List<LarkTeam> larkTeamList = getTameUserList(projectConfig);
         Set<String> userIds = new HashSet<>();
         for(LarkTeam larkTeam : larkTeamList){
             userIds.addAll(larkTeam.getUser_keys());
@@ -316,16 +328,17 @@ public class LarkAbstractClient extends BaseClient {
         return larkUserInfos;
     }
 
-    public List<LarkTeam> getTameUserList() {
+    public List<LarkTeam> getTameUserList(LarkProjectConfig projectConfig) {
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-//        Map<String, String> map =  JSON.parseMap(projectConfig);
-//        String spaceId = map.get("spaceId");
+
+//      Map<String, String> map =  JSON.parseMap(projectConfig);
+//       String spaceId = map.get("spaceId");
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.TEAMS_ALL.getUrl(SPACEID)), URLEnum.TEAMS_ALL.getHttpMethod(), requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.TEAMS_ALL.getUrl(projectConfig.getSpaceId())), URLEnum.TEAMS_ALL.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -338,14 +351,17 @@ public class LarkAbstractClient extends BaseClient {
         return larkTeamList;
     }
 
-    public Map<String, LarkSimpleField> getSpaceField() {
+    public Map<String, LarkSimpleField> getSpaceField(LarkProjectConfig projectConfig) {
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+//        Map<String, String> map =  JSON.parseMap(projectConfig);
+//        String spaceId = map.get("spaceId");
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.GET_SPACE_FIELD.getUrl(SPACEID)), URLEnum.GET_SPACE_FIELD.getHttpMethod(), requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.GET_SPACE_FIELD.getUrl(projectConfig.getSpaceId())), URLEnum.GET_SPACE_FIELD.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -386,18 +402,21 @@ public class LarkAbstractClient extends BaseClient {
     }
 
     public IssuesWithBLOBs addIssue(PlatformIssuesUpdateRequest issuesRequest) {
-//        Map<String, LarkSimpleField> larkSimpleFieldMap = getSpaceField(issuesRequest.getProjectConfig());
-        Map<String, LarkFieldConf> larkSimpleFieldMap = getThirdPartCustomFieldMap();
+//        Map<String, LarkSimpleField> larkSimpleFieldMap = getSpaceField();
+        String projectConfig=issuesRequest.getProjectConfig();
+
+        Map<String, LarkFieldConf> larkSimpleFieldMap = getThirdPartCustomFieldMap(projectConfig);
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         LarkAddWorkItem larkAddWorkItem = new LarkAddWorkItem(issuesRequest, larkSimpleFieldMap, "issue", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(larkAddWorkItem), headers);
-//        Map<String, String> map = JSON.parseMap(issuesRequest.getProjectConfig());
-//        String spaceId = map.get("spaceId");
+
+        LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+        String spaceId=lpc.getSpaceId();
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.ADD_ISSUE.getUrl(SPACEID)), URLEnum.ADD_ISSUE.getHttpMethod(), requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.ADD_ISSUE.getUrl(spaceId)), URLEnum.ADD_ISSUE.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -407,8 +426,8 @@ public class LarkAbstractClient extends BaseClient {
         }
         LarkResponseBase larkResponseBase = JSON.parseObject(response.getBody(), LarkResponseBase.class);
         IssuesWithBLOBs issues = issuesRequest;
-        issues.setPlatformId(SPACEID+"_"+larkResponseBase.getDataStr());
-        issues.setId(SPACEID+"_"+larkResponseBase.getDataStr());
+        issues.setPlatformId(spaceId+"_"+larkResponseBase.getDataStr());
+        issues.setId(spaceId+"_"+larkResponseBase.getDataStr());
         LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
         larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(larkResponseBase.getDataStr())));
 
@@ -418,7 +437,7 @@ public class LarkAbstractClient extends BaseClient {
                 Thread.currentThread().sleep(3000 * i);
             }catch (Exception e){
             }
-            larkWorkItemInfos = getWorkItem(larkWorkItemRequest);
+            larkWorkItemInfos = getWorkItem(larkWorkItemRequest,lpc);
             if(larkWorkItemInfos.size() == 1) {
                 //查出有值跳出循环
                 break;
@@ -460,7 +479,7 @@ public class LarkAbstractClient extends BaseClient {
         headers.add("X-USER-KEY", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(workItemRequest), headers);
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.SEARCH_WORK_ITEM.getUrl(SPACEID, workItemType)), URLEnum.GET_WORK_ITEM.getHttpMethod(), requestEntity, String.class);
+//            response = restTemplate.exchange(getUrl(URLEnum.SEARCH_WORK_ITEM.getUrl(SPACEID, workItemType)), URLEnum.GET_WORK_ITEM.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -473,14 +492,17 @@ public class LarkAbstractClient extends BaseClient {
         return larkWorkItemInfos;
     }
 
-    public List<LarkWorkItemInfo> getWorkItem(LarkWorkItemRequest workItemRequest){
+    public List<LarkWorkItemInfo> getWorkItem(LarkWorkItemRequest workItemRequest,LarkProjectConfig projectConfig){
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(workItemRequest), headers);
+
+
+
         try {
-            response = restTemplate.exchange(getUrl(URLEnum.GET_WORK_ITEM.getUrl(SPACEID)), URLEnum.GET_WORK_ITEM.getHttpMethod(), requestEntity, String.class);
+            response = restTemplate.exchange(getUrl(URLEnum.GET_WORK_ITEM.getUrl(projectConfig.getSpaceId())), URLEnum.GET_WORK_ITEM.getHttpMethod(), requestEntity, String.class);
         } catch (HttpClientErrorException e) {
             LogUtil.error(e.getMessage(), e);
             MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
@@ -493,12 +515,12 @@ public class LarkAbstractClient extends BaseClient {
         return larkWorkItemInfos;
     }
 
-    public List<LarkWorkItemInfo> getWorkItemAll(LarkWorkItemRequest workItemRequest){
+    public List<LarkWorkItemInfo> getWorkItemAll(LarkWorkItemRequest workItemRequest,LarkProjectConfig projectConfig){
         List<LarkWorkItemInfo> larkWorkItemInfos = new ArrayList<>();
         for(Long i = 1l ; i < 9223372036854775807l; i++){
             workItemRequest.setPage_num(i.intValue());
             workItemRequest.setPage_size(200);
-            List<LarkWorkItemInfo> temp = getWorkItem(workItemRequest);
+            List<LarkWorkItemInfo> temp = getWorkItem(workItemRequest,projectConfig);
             if(temp != null && temp.size() != 0){
                 larkWorkItemInfos.addAll(temp);
             } else{
@@ -545,7 +567,8 @@ public class LarkAbstractClient extends BaseClient {
 
     public IssuesWithBLOBs updateIssue(PlatformIssuesUpdateRequest issuesRequest) {
 //        Map<String, LarkSimpleField> larkSimpleFieldMap = getSpaceField(issuesRequest.getProjectConfig());
-        Map<String,LarkFieldConf> larkFieldConfMap = getThirdPartCustomFieldMap();
+        String projectConfig=issuesRequest.getProjectConfig();
+        Map<String,LarkFieldConf> larkFieldConfMap = getThirdPartCustomFieldMap(projectConfig);
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
@@ -564,9 +587,10 @@ public class LarkAbstractClient extends BaseClient {
             MSPluginException.throwException(e.getMessage());
         }
         IssuesWithBLOBs issues = issuesRequest;
+        LarkProjectConfig lpc=JSON.parseObject(projectConfig, LarkProjectConfig.class);
         LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
         larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(key[1])));
-        List<LarkWorkItemInfo> larkWorkItemInfos = getWorkItem(larkWorkItemRequest);
+        List<LarkWorkItemInfo> larkWorkItemInfos = getWorkItem(larkWorkItemRequest,lpc);
         if(larkWorkItemInfos.size() != 1) {
             MSPluginException.throwException("添加缺陷失败，获取缺陷异常："+JSON.toJSONString(larkWorkItemInfos));
         }

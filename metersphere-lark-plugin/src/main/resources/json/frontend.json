@@ -35,17 +35,6 @@
         "instructionsIcon": "/static/user-key.png"
       },
       {
-        "name": "spaceId",
-        "type": "input",
-        "defaultValue": "",
-        "required": true,
-        "i18n": false,
-        "label": "空间id",
-        "withProjectCheck": true,
-        "instructionsIcon": "/static/spaceid.png",
-        "message": "请输入空间id"
-      },
-      {
         "name": "url",
         "type": "input",
         "defaultValue": "",
@@ -60,15 +49,15 @@
   "projectConfig": {
     "formItems": [
       {
-        "name": "demandId",
+        "name": "spaceId",
         "type": "input",
         "defaultValue": "",
         "required": true,
         "i18n": false,
-        "label": "需求id",
+        "label": "空间id",
         "withProjectCheck": true,
-        "instructionsIcon": "/static/lark-key.png",
-        "message": "请输入需求id"
+        "instructionsIcon": "/static/spaceid.png",
+        "message": "请输入空间id"
       },
       {
         "name": "larkIssueTypeId",

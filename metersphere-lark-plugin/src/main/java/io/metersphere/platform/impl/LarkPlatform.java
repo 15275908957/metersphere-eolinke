@@ -48,12 +48,12 @@ public class LarkPlatform extends AbstractPlatform {
     public List<DemandDTO> getDemands(String projectConfig) {
         LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
         LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
+        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest,lpc);
         List<DemandDTO> demandDTOS = new ArrayList<>();
         for(LarkWorkItemInfo item : larkWorkItemInfos){
-            if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
+            //if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
                 demandDTOS.add(larkWrokItemToDemands(item));
-            }
+            //}
         }
         return demandDTOS;
     }
@@ -118,7 +118,7 @@ public class LarkPlatform extends AbstractPlatform {
     public void validateIntegrationConfig() {
         larkAbstractClient.auth();
         larkAbstractClient.checkUserByUserKey();
-        larkAbstractClient.checkSpaceId();
+//        larkAbstractClient.checkSpaceId();
     }
 
     public List<LarkWorkItemInfo> searchWorkItemAll(LarkSearchWorkItemRequest larkWorkItemRequest,String type){
@@ -128,24 +128,32 @@ public class LarkPlatform extends AbstractPlatform {
 
     @Override
     public void validateProjectConfig(String projectConfig) {
-        try {
-            LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
-            //婚礼纪以需求去分项目，非标，个性化的
-//            List<String> spaceIds = larkAbstractClient.getWorkSpaceIdList();
-            LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(larkProjectConfig.getDemandId())));
-            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
-            List<String> strings = new ArrayList<>();
-            for(LarkWorkItemInfo item : larkWorkItemInfos){
-                strings.add(item.getId()+"");
-            }
-            if(!strings.contains(larkProjectConfig.getDemandId())){
-                MSPluginException.throwException("无效的需求id");
-            }
-        } catch (Exception e) {
-            LogUtil.error(e);
-            MSPluginException.throwException(e.getMessage());
-        }
+
+        LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+        //项目配置中使用飞书空间 关联项目
+        larkAbstractClient.checkSpaceId(larkProjectConfig.getSpaceId());
+//        try {
+//            LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+//            larkAbstractClient.SPACEID=larkProjectConfig.getSpaceId();
+//            //项目配置中使用飞书空间 关联项目
+//            larkAbstractClient.checkSpaceId();
+//
+//            //婚礼纪以需求去分项目，非标，个性化的
+////            List<String> spaceIds = larkAbstractClient.getWorkSpaceIdList();
+//            LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
+//            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(larkProjectConfig.getDemandId())));
+//            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
+//            List<String> strings = new ArrayList<>();
+//            for(LarkWorkItemInfo item : larkWorkItemInfos){
+//                strings.add(item.getId()+"");
+//            }
+//            if(!strings.contains(larkProjectConfig.getDemandId())){
+//                MSPluginException.throwException("无效的需求id");
+//            }
+//        } catch (Exception e) {
+//            LogUtil.error(e);
+//            MSPluginException.throwException(e.getMessage());
+//        }
     }
 
     public List<SelectOption> getIssueTypes(GetOptionRequest request) {
@@ -283,11 +291,13 @@ public class LarkPlatform extends AbstractPlatform {
     public SyncIssuesResult syncIssues(SyncIssuesRequest request){
         MSPluginException.throwException("同步失败");
         //找出ms所需要的飞书字段模版
+
+        LarkProjectConfig lpc = JSON.parseObject(request.getProjectConfig(), LarkProjectConfig.class);
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = null;
         platformCustomFieldItemDTOS = getThirdPartCustomField(request.getProjectConfig());
         //获取全部飞书issues
         LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
-        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(workItemRequest);
+        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(workItemRequest,lpc);
         //婚礼纪个性化，用需求筛选项目
 //        checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
         //获取全部MSissues
@@ -363,8 +373,10 @@ public class LarkPlatform extends AbstractPlatform {
 
     @Override
     public List<PlatformCustomFieldItemDTO> getThirdPartCustomField(String projectConfig){
-        MSPluginException.throwException("apacheaaa");
-        return getThirdPartCustomFieldIO(projectConfig);
+
+        //MSPluginException.throwException("apacheaaa");
+        LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+        return getThirdPartCustomFieldIO(lpc);
 //        LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
 //        // json 可能等于三个值，null TIMEOUT object
 //        String json = RedisSingleton.getInstance().getValue("getThirdPartCustomField", larkAbstractClient.PLUGIN_ID);
@@ -384,23 +396,27 @@ public class LarkPlatform extends AbstractPlatform {
 //        return JSON.parseArray(json, PlatformCustomFieldItemDTO.class);
     }
 
-    public List<PlatformCustomFieldItemDTO> getThirdPartCustomFieldIO(String projectConfig){
+    public List<PlatformCustomFieldItemDTO> getThirdPartCustomFieldIO(LarkProjectConfig projectConfig){
+
         List<LarkFieldConf> larkSimpleFields = null;
         Map<String, LarkSimpleField> larkSimpleFieldMap = null;
         List<LarkUserInfo> larkUserInfos = null;
         List<DemandDTO> demandDTOS = new ArrayList<>();
         try {
-            larkSimpleFields = larkAbstractClient.getThirdPartCustomField();
-            larkSimpleFieldMap = larkAbstractClient.getSpaceField();
-            larkUserInfos = larkAbstractClient.getTameUserInfoList();
-            LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
+
+            larkSimpleFields = larkAbstractClient.getThirdPartCustomField(projectConfig);
+            larkSimpleFieldMap = larkAbstractClient.getSpaceField(projectConfig);
+            larkUserInfos = larkAbstractClient.getTameUserInfoList(projectConfig);
+
+            //获取空间下的所有需求
             LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(lpc.getDemandId())));
-            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
+
+//            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(lpc.getDemandId())));
+            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest,projectConfig);
             for(LarkWorkItemInfo item : larkWorkItemInfos){
-                if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
+//                if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
                     demandDTOS.add(larkWrokItemToDemands(item));
-                }
+//                }
             }
 
 //            demandDTOS = getDemands(projectConfig);
@@ -528,17 +544,20 @@ public class LarkPlatform extends AbstractPlatform {
     @Override
     public void syncAllIssues(SyncAllIssuesRequest syncRequest){
         List<Map> zentaoIssues = new ArrayList<>();
-        LarkProjectConfig larkProjectConfig = JSON.parseObject(syncRequest.getProjectConfig(), LarkProjectConfig.class);
+        String projectConfig=syncRequest.getProjectConfig();
+        LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = getThirdPartCustomField(syncRequest.getProjectConfig());
 //        ThreadPool tp = new ThreadPool(this, syncRequest.getProjectConfig());
 //        tp.run();
         //获取全部飞书issues
-//        LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
-
+        LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("issue"));
         System.out.println("start get item project all issus");
-//        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(workItemRequest);
-        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.searchWorkItemAll(getLarkSWI(larkProjectConfig.getDemandId()), "issue");
-//        checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
+        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(workItemRequest,larkProjectConfig);
+        //搜索指定需求下面的缺陷
+//        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.searchWorkItemAll(getLarkSWI(larkProjectConfig.getDemandId()), "issue");
+
+
+        //        checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
         System.out.println("get work Item size:"+larkWorkItemInfos.size());
         SyncAllIssuesResult syncIssuesResult = new SyncAllIssuesResult();
         //找出ms需要添加的缺陷

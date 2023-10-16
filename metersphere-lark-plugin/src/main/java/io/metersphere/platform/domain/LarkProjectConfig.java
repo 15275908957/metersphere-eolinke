@@ -9,5 +9,6 @@ public class LarkProjectConfig {
     private String larkIssueTypeId;
     private String larkStoryTypeId;
     private boolean thirdPartTemplate;
-    private String demandId;
+//    private String demandId;
+    private String spaceId;
 }

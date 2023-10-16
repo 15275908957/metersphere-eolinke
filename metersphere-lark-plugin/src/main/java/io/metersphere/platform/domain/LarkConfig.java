@@ -13,5 +13,5 @@ public class LarkConfig {
     private String pluginSecret;
     private String url;
     private String userKey;
-    private String spaceId;
+//    private String spaceId;
 }

@@ -31,6 +31,8 @@ public class LarkAbstractClient extends BaseClient {
 
     protected String token;
 
+    protected String ITERATION_FIELD_ID;
+
 //    public RestTemplate BaseClient() {
 //        RestTemplate temp = null;
 //        try {
@@ -201,6 +203,7 @@ public class LarkAbstractClient extends BaseClient {
         PLUGIN_SECRET = config.getPluginSecret();
         USER_KEY = config.getUserKey();
         SPACEID = config.getSpaceId();
+        ITERATION_FIELD_ID = config.getIterationFieldId();
 //        restTemplate = BaseClient();
         getToken();
     }
@@ -572,5 +575,21 @@ public class LarkAbstractClient extends BaseClient {
         }
         issues.setUpdateTime(larkWorkItemInfos.get(0).getUpdated_at());
         return issues;
+    }
+
+    /**
+     * 检验服务集成中的关联迭代字段
+     */
+    public void checkField() {
+        try {
+        Map<String,LarkSimpleField> ids = getSpaceField();
+        if(!ids.containsKey(ITERATION_FIELD_ID)){
+            MSPluginException.throwException("无效的字段id");
+        }
+    } catch (Exception e) {
+        LogUtil.error(e);
+        MSPluginException.throwException(e.getMessage());
+    }
+
     }
 }

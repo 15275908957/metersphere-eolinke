@@ -14,4 +14,5 @@ public class LarkConfig {
     private String url;
     private String userKey;
     private String spaceId;
+    private String iterationFieldId;
 }

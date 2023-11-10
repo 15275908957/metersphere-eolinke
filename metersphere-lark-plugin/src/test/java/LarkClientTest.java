@@ -46,10 +46,10 @@ public class LarkClientTest {
         PlatformRequest request = new PlatformRequest();
 
         larkConfig.setUrl("https://project.feishu.cn");
-        larkConfig.setPluginId("MII_63C4D9A1E1C14003");
-        larkConfig.setPluginSecret("ADEC309FEF445FD40ED830976C2E7FB5");
-        larkConfig.setUserKey("7152532929715896348");
-        larkConfig.setSpaceId("617907a1c6bbf993652cb1d8");
+        larkConfig.setPluginId("MII_652515C12C0E4004");
+        larkConfig.setPluginSecret("66E3AC84B81809961190008AEC9C216F");
+        larkConfig.setUserKey("7241406358686416900");
+        larkConfig.setSpaceId("650bab169b4ea5d284b5c5c9");
         String inConfig = JSON.toJSONString(larkConfig);
         request.setIntegrationConfig(inConfig);
         client = new LarkPlatform(request);
@@ -77,23 +77,29 @@ public class LarkClientTest {
 
     @Test
     public void testSI(){
+        //根据工作项id  查询工作项
         LarkSearchWorkItemRequest larkWorkItemRequest = new LarkSearchWorkItemRequest();
 //        larkWorkItemRequest.setPage_num(1l);
         LarkSearchGroup larkSearchGroup = new LarkSearchGroup();
         larkSearchGroup.setConjunction("AND");
         LarkSearchParam larkSearchParam = new LarkSearchParam();
         larkSearchParam.setOperator("HAS ANY OF");
-        larkSearchParam.setParam_key("_field_linked_story");
-        larkSearchParam.setValue(Arrays.asList(1142750));
+        //查缺陷
+        //larkSearchParam.setParam_key("_field_linked_story");
+//        larkSearchParam.setParam_key("work_item_id");
+        larkSearchParam.setParam_key("field_87583b");
+        int[] demands=new int[]{20967218,21036583};
+        larkSearchParam.setValue(demands);
         larkSearchGroup.getSearch_params().add(larkSearchParam);
         larkWorkItemRequest.setSearch_group(larkSearchGroup);
 //        List<PlatformCustomFieldItemDTO> temp = client.getThirdPartCustomFieldIO(JSON.toJSONString(larkConfig));
-        Object obj = client.searchWorkItemAll(larkWorkItemRequest,"issue");
+        Object obj = client.searchWorkItemAll(larkWorkItemRequest,"story");
         System.out.println(obj);
     }
 
     @Test
     public void tGWI(){
+        //根据工作项类型，获取指定的工作项列表 成功
         LarkProjectConfig larkProjectConfig =  new LarkProjectConfig();
 //        larkProjectConfig.setDemandId("1142750");
         LarkWorkItemRequest workItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));

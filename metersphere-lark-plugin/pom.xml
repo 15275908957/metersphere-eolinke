@@ -7,7 +7,7 @@
     <groupId>io.metersphere</groupId>
     <artifactId>metersphere-lark-plugin</artifactId>
     <!--  这个版本号对照 MS 版本号，表示支持 MS 2.4.0 ~ 最新发布的版本  -->
-    <version>2.10.0</version>
+    <version>2.10.1</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -40,7 +40,7 @@
         <dependency>
             <groupId>io.metersphere</groupId>
             <artifactId>metersphere-platform-plugin-sdk</artifactId>
-            <version>1.6.1</version>
+            <version>1.6.0</version>
             <!-- 打包进去会冲突 -->
             <scope>provided</scope>
             <exclusions>

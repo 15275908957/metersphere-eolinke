@@ -9,6 +9,7 @@ import io.metersphere.plugin.utils.JSON;
 import io.metersphere.plugin.utils.LogUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
+
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,7 +18,7 @@ public class LarkPlatform extends AbstractPlatform {
 
     public LarkAbstractClient larkAbstractClient;
 
-    public LarkPlatform(PlatformRequest request){
+    public LarkPlatform(PlatformRequest request) {
 
         super.key = LarkPlatformMetaInfo.KEY;
         super.request = request;
@@ -26,10 +27,9 @@ public class LarkPlatform extends AbstractPlatform {
     }
 
 
-
     @Override
     public void validateUserConfig(String request) {
-        LarkConfig config = JSON.parseObject(request ,LarkConfig.class);
+        LarkConfig config = JSON.parseObject(request, LarkConfig.class);
         larkAbstractClient.PLUGIN_ID = config.getPluginId();
         larkAbstractClient.PLUGIN_SECRET = config.getPluginSecret();
         larkAbstractClient.USER_KEY = config.getUserKey();
@@ -47,17 +47,25 @@ public class LarkPlatform extends AbstractPlatform {
     @Override
     public List<DemandDTO> getDemands(String projectConfig) {
         LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
-        LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
+        //查询无迭代需求
+//        LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
+        List<LarkWorkItemInfo> larkWorkItemInfos= new ArrayList<>();
+        if(StringUtils.isNotBlank(lpc.getDemandId())) {
+            larkWorkItemInfos.addAll(larkAbstractClient.searchWorkItemAll(getLarkSWI(lpc.getDemandId(), "work_item_id"), "story"));
+        }
+        if(StringUtils.isNotBlank(lpc.getIterationId())) {
+            //查询迭代下的需求
+            larkWorkItemInfos.addAll(larkAbstractClient.searchWorkItemAll(getLarkSWI(lpc.getIterationId(), larkAbstractClient.ITERATION_FIELD_ID), "story"));
+
+        }
         List<DemandDTO> demandDTOS = new ArrayList<>();
-        for(LarkWorkItemInfo item : larkWorkItemInfos){
-            if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
-                demandDTOS.add(larkWrokItemToDemands(item));
-            }
+        for (LarkWorkItemInfo item : larkWorkItemInfos) {
+           demandDTOS.add(larkWrokItemToDemands(item));
         }
         return demandDTOS;
     }
-    private DemandDTO larkWrokItemToDemands(LarkWorkItemInfo larkWorkItemInfo){
+
+    private DemandDTO larkWrokItemToDemands(LarkWorkItemInfo larkWorkItemInfo) {
         DemandDTO demandDTO = new DemandDTO();
         demandDTO.setId(larkWorkItemInfo.getMSId());
         demandDTO.setName(larkWorkItemInfo.getName());
@@ -66,7 +74,7 @@ public class LarkPlatform extends AbstractPlatform {
     }
 
     public void refreshUserToken(String userConfig) {
-        if(StringUtils.isNotEmpty(userConfig)){
+        if (StringUtils.isNotEmpty(userConfig)) {
             LarkUserPlatformUserConfig larkUserPlatformUserConfig = JSON.parseObject(userConfig, LarkUserPlatformUserConfig.class);
             larkAbstractClient.PLUGIN_ID = larkUserPlatformUserConfig.getPluginId();
             larkAbstractClient.PLUGIN_SECRET = larkUserPlatformUserConfig.getPluginSecret();
@@ -119,9 +127,10 @@ public class LarkPlatform extends AbstractPlatform {
         larkAbstractClient.auth();
         larkAbstractClient.checkUserByUserKey();
         larkAbstractClient.checkSpaceId();
+        larkAbstractClient.checkField();
     }
 
-    public List<LarkWorkItemInfo> searchWorkItemAll(LarkSearchWorkItemRequest larkWorkItemRequest,String type){
+    public List<LarkWorkItemInfo> searchWorkItemAll(LarkSearchWorkItemRequest larkWorkItemRequest, String type) {
         return larkAbstractClient.searchWorkItemAll(larkWorkItemRequest, type);
     }
 
@@ -132,20 +141,48 @@ public class LarkPlatform extends AbstractPlatform {
             LarkProjectConfig larkProjectConfig = JSON.parseObject(projectConfig, LarkProjectConfig.class);
             //婚礼纪以需求去分项目，非标，个性化的
 //            List<String> spaceIds = larkAbstractClient.getWorkSpaceIdList();
-            LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(larkProjectConfig.getDemandId())));
-            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
-            List<String> strings = new ArrayList<>();
-            for(LarkWorkItemInfo item : larkWorkItemInfos){
-                strings.add(item.getId()+"");
+
+            String demandId = larkProjectConfig.getDemandId();
+            String iterationId=larkProjectConfig.getIterationId();
+            List<String> demandList=new ArrayList<>();
+            //多个需求
+            //验证需求ID
+            if(StringUtils.isNotBlank(demandId)) {
+
+                demandList.addAll(Arrays.asList(demandId.split(",")));
             }
-            if(!strings.contains(larkProjectConfig.getDemandId())){
-                MSPluginException.throwException("无效的需求id");
+            //验证迭代id
+            if(StringUtils.isNotBlank(iterationId)){
+                String[] iterations = iterationId.split(",");
+                demandList.addAll(Arrays.asList(iterations));
             }
+            List<String> item_type=new ArrayList<>();
+                item_type.add("story");
+                item_type.add("sprint");
+                LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(item_type);
+                larkWorkItemRequest.setWork_item_ids(demandList.stream().map(Integer::valueOf).collect(Collectors.toList()));
+                List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
+                List<String> strings = new ArrayList<>();
+                for (LarkWorkItemInfo item : larkWorkItemInfos) {
+                    strings.add(String.valueOf(item.getId()));
+
+                }
+            for (int i = 0; i < demandList.size(); i++) {
+                if(!strings.contains(demandList.get(i))){
+                    MSPluginException.throwException("无效的id："+demandList.get(i));
+                }
+            }
+
+//                if (!strings.contains(larkProjectConfig.getDemandId())) {
+//                    MSPluginException.throwException("无效的需求id");
+//                }
         } catch (Exception e) {
             LogUtil.error(e);
             MSPluginException.throwException(e.getMessage());
         }
+
+
+
     }
 
     public List<SelectOption> getIssueTypes(GetOptionRequest request) {
@@ -157,7 +194,7 @@ public class LarkPlatform extends AbstractPlatform {
             MSPluginException.throwException(e.getMessage());
         }
         List<SelectOption> selectOptions = larkIssueTypes.stream()
-                .map(item ->  new SelectOption(item.getName(), item.getType_key()))
+                .map(item -> new SelectOption(item.getName(), item.getType_key()))
                 .collect(Collectors.toList());
         return selectOptions;
     }
@@ -172,36 +209,36 @@ public class LarkPlatform extends AbstractPlatform {
         return null;
     }
 
-    private List<IssuesWithBLOBs> getMSAddIssues (List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS, List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOHashList) {
+    private List<IssuesWithBLOBs> getMSAddIssues(List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS, List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOHashList) {
         List<IssuesWithBLOBs> issuesWithBLOBsList = new ArrayList<>();
-        for(LarkWorkItemInfo item: larkWorkItemInfos){
-            try{
+        for (LarkWorkItemInfo item : larkWorkItemInfos) {
+            try {
                 boolean isAdd = true;
-                if(platformIssuesDTOS != null){
-                    for(PlatformIssuesDTO p : platformIssuesDTOS){
-                        if(StringUtils.equals(p.getPlatformId(), item.getMSId())){
+                if (platformIssuesDTOS != null) {
+                    for (PlatformIssuesDTO p : platformIssuesDTOS) {
+                        if (StringUtils.equals(p.getPlatformId(), item.getMSId())) {
                             isAdd = false;
                             break;
                         }
                     }
                 }
-                if(isAdd){
+                if (isAdd) {
                     IssuesWithBLOBs issues = item.toIssuesWithBLOB(larkAbstractClient.USER_KEY, platformCustomFieldItemDTOHashList);
                     issuesWithBLOBsList.add(issues);
                 }
-            }catch (Exception e){
-                System.out.println("getMSAddIssues item "+JSON.toJSONString(item));
+            } catch (Exception e) {
+                System.out.println("getMSAddIssues item " + JSON.toJSONString(item));
                 e.printStackTrace();
             }
         }
         return issuesWithBLOBsList;
     }
 
-    private List<IssuesWithBLOBs> getMSUpdateIssues (List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS, List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOHashList) {
+    private List<IssuesWithBLOBs> getMSUpdateIssues(List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS, List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOHashList) {
         List<IssuesWithBLOBs> issuesWithBLOBsList = new ArrayList<>();
-        for(LarkWorkItemInfo item: larkWorkItemInfos){
+        for (LarkWorkItemInfo item : larkWorkItemInfos) {
             boolean isUpdate = false;
-            if(platformIssuesDTOS != null) {
+            if (platformIssuesDTOS != null) {
                 for (PlatformIssuesDTO p : platformIssuesDTOS) {
                     if (StringUtils.equals(p.getPlatformId(), item.getMSId())) {
                         if (p.getUpdateTime() != item.getUpdated_at()) {
@@ -211,7 +248,7 @@ public class LarkPlatform extends AbstractPlatform {
                     }
                 }
             }
-            if(isUpdate) {
+            if (isUpdate) {
                 IssuesWithBLOBs issues = item.toIssuesWithBLOB(larkAbstractClient.USER_KEY, platformCustomFieldItemDTOHashList);
                 issuesWithBLOBsList.add(issues);
             }
@@ -219,17 +256,17 @@ public class LarkPlatform extends AbstractPlatform {
         return issuesWithBLOBsList;
     }
 
-    private List<String> getMSDeleteIssues (List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS) {
+    private List<String> getMSDeleteIssues(List<LarkWorkItemInfo> larkWorkItemInfos, List<PlatformIssuesDTO> platformIssuesDTOS) {
         List<String> ids = new ArrayList<>();
-        for(PlatformIssuesDTO p : platformIssuesDTOS){
+        for (PlatformIssuesDTO p : platformIssuesDTOS) {
             boolean isDelete = true;
-            for(LarkWorkItemInfo item: larkWorkItemInfos){
-                if(StringUtils.equals(item.getProject_key()+"_"+item.getId(), p.getPlatformId())){
+            for (LarkWorkItemInfo item : larkWorkItemInfos) {
+                if (StringUtils.equals(item.getProject_key() + "_" + item.getId(), p.getPlatformId())) {
                     isDelete = false;
                     break;
                 }
             }
-            if(isDelete){
+            if (isDelete) {
                 ids.add(p.getId());
             }
         }
@@ -237,22 +274,22 @@ public class LarkPlatform extends AbstractPlatform {
     }
 
     public void getMSAddAttachment(Map<String, List<PlatformAttachment>> attachmentMap, List<LarkWorkItemInfo> larkWorkItemInfos, List<IssuesWithBLOBs> issues) {
-        for(IssuesWithBLOBs p : issues){
-            for(LarkWorkItemInfo item: larkWorkItemInfos){
-                if(StringUtils.equals(item.getMSId(), p.getPlatformId())){
+        for (IssuesWithBLOBs p : issues) {
+            for (LarkWorkItemInfo item : larkWorkItemInfos) {
+                if (StringUtils.equals(item.getMSId(), p.getPlatformId())) {
                     attachmentMap.put(item.getMSId(), new ArrayList<>());
                     List<LarkFieldValuePairs> larkFieldValuePairsList = item.getFields();
-                    for(LarkFieldValuePairs larkFieldValuePairs : larkFieldValuePairsList){
-                        if(StringUtils.equals(larkFieldValuePairs.getField_type_key(), "multi_file")){
-                            if(larkFieldValuePairs.getField_value() == null){
+                    for (LarkFieldValuePairs larkFieldValuePairs : larkFieldValuePairsList) {
+                        if (StringUtils.equals(larkFieldValuePairs.getField_type_key(), "multi_file")) {
+                            if (larkFieldValuePairs.getField_value() == null) {
                                 break;
                             }
                             String arrayStr = JSON.toJSONString(larkFieldValuePairs.getField_value());
                             List list = JSON.parseArray(arrayStr);
-                            for(int i = 0; i < list.size(); i++){
+                            for (int i = 0; i < list.size(); i++) {
                                 String valueStr = JSON.toJSONString(list.get(i));
                                 Map<String, String> map = JSON.parseMap(valueStr);
-                                if(map != null){
+                                if (map != null) {
                                     PlatformAttachment syncAttachment = new PlatformAttachment();
                                     // name 用于查重
                                     syncAttachment.setFileName(map.get("name"));
@@ -269,7 +306,7 @@ public class LarkPlatform extends AbstractPlatform {
         }
     }
 
-    private Map<String, List<PlatformAttachment>> getMSAddAttachment (List<LarkWorkItemInfo> larkWorkItemInfos, SyncIssuesResult platformIssuesDTOS) {
+    private Map<String, List<PlatformAttachment>> getMSAddAttachment(List<LarkWorkItemInfo> larkWorkItemInfos, SyncIssuesResult platformIssuesDTOS) {
         Map<String, List<PlatformAttachment>> attachmentMap = new HashMap<>();
         //更新待添加的缺陷附件
         getMSAddAttachment(attachmentMap, larkWorkItemInfos, platformIssuesDTOS.getAddIssues());
@@ -280,7 +317,7 @@ public class LarkPlatform extends AbstractPlatform {
 
 
     @Override
-    public SyncIssuesResult syncIssues(SyncIssuesRequest request){
+    public SyncIssuesResult syncIssues(SyncIssuesRequest request) {
         MSPluginException.throwException("同步失败");
         //找出ms所需要的飞书字段模版
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = null;
@@ -304,37 +341,37 @@ public class LarkPlatform extends AbstractPlatform {
         return syncIssuesResult;
     }
 
-    public void checkIssueByDemandId(List<LarkWorkItemInfo> larkWorkItemInfos, String demandId){
+    public void checkIssueByDemandId(List<LarkWorkItemInfo> larkWorkItemInfos, String demandId) {
         List<LarkWorkItemInfo> temp = new ArrayList<>();
-        for(LarkWorkItemInfo item : larkWorkItemInfos){
-            try{
+        for (LarkWorkItemInfo item : larkWorkItemInfos) {
+            try {
                 List<LarkFieldValuePairs> larkFieldValuePairs = item.getFields();
-                if(larkFieldValuePairs == null){
+                if (larkFieldValuePairs == null) {
                     temp.add(item);
                     continue;
                 }
-                for(LarkFieldValuePairs lfvp: larkFieldValuePairs){
-                    try{
-                        if(StringUtils.equals(lfvp.getField_type_key(), "work_item_related_select")){
-                            if(!StringUtils.equals(lfvp.getField_value()+"", demandId)){
+                for (LarkFieldValuePairs lfvp : larkFieldValuePairs) {
+                    try {
+                        if (StringUtils.equals(lfvp.getField_type_key(), "work_item_related_select")) {
+                            if (!StringUtils.equals(lfvp.getField_value() + "", demandId)) {
                                 temp.add(item);
                                 break;
                             }
                         }
-                    }catch (Exception e){
-                        System.out.println("error item "+JSON.toJSONString(item)+" error lfvp "+JSON.toJSONString(lfvp));
+                    } catch (Exception e) {
+                        System.out.println("error item " + JSON.toJSONString(item) + " error lfvp " + JSON.toJSONString(lfvp));
                         temp.add(item);
                         e.printStackTrace();
                     }
                 }
-            } catch (Exception e){
+            } catch (Exception e) {
                 temp.add(item);
-                System.out.println("error json "+JSON.toJSONString(item));
+                System.out.println("error json " + JSON.toJSONString(item));
                 e.printStackTrace();
             }
 
         }
-        for(LarkWorkItemInfo item : temp){
+        for (LarkWorkItemInfo item : temp) {
             larkWorkItemInfos.remove(item);
         }
     }
@@ -350,9 +387,9 @@ public class LarkPlatform extends AbstractPlatform {
             field.put("type", item.getType());
             String defaultValue = item.getDefaultValue();
             if (StringUtils.isNotBlank(defaultValue)) {
-                try{
+                try {
                     field.put("value", JSON.parseObject(defaultValue));
-                }catch (Exception e){
+                } catch (Exception e) {
                     field.put("value", defaultValue);
                 }
             }
@@ -362,8 +399,8 @@ public class LarkPlatform extends AbstractPlatform {
     }
 
     @Override
-    public List<PlatformCustomFieldItemDTO> getThirdPartCustomField(String projectConfig){
-        MSPluginException.throwException("apacheaaa");
+    public List<PlatformCustomFieldItemDTO> getThirdPartCustomField(String projectConfig) {
+//        MSPluginException.throwException("apacheaaa");
         return getThirdPartCustomFieldIO(projectConfig);
 //        LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
 //        // json 可能等于三个值，null TIMEOUT object
@@ -384,7 +421,7 @@ public class LarkPlatform extends AbstractPlatform {
 //        return JSON.parseArray(json, PlatformCustomFieldItemDTO.class);
     }
 
-    public List<PlatformCustomFieldItemDTO> getThirdPartCustomFieldIO(String projectConfig){
+    public List<PlatformCustomFieldItemDTO> getThirdPartCustomFieldIO(String projectConfig) {
         List<LarkFieldConf> larkSimpleFields = null;
         Map<String, LarkSimpleField> larkSimpleFieldMap = null;
         List<LarkUserInfo> larkUserInfos = null;
@@ -395,15 +432,8 @@ public class LarkPlatform extends AbstractPlatform {
             larkUserInfos = larkAbstractClient.getTameUserInfoList();
             LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
             LarkWorkItemRequest larkWorkItemRequest = new LarkWorkItemRequest(Arrays.asList("story"));
-            larkWorkItemRequest.setWork_item_ids(Arrays.asList(Integer.parseInt(lpc.getDemandId())));
-            List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(larkWorkItemRequest);
-            for(LarkWorkItemInfo item : larkWorkItemInfos){
-                if(StringUtils.equals(item.getId()+"", lpc.getDemandId())){
-                    demandDTOS.add(larkWrokItemToDemands(item));
-                }
-            }
-
-//            demandDTOS = getDemands(projectConfig);
+            //获取所有需求
+            demandDTOS = getDemands(projectConfig);
 
         } catch (Exception e) {
             LogUtil.error(e);
@@ -411,15 +441,15 @@ public class LarkPlatform extends AbstractPlatform {
         }
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = new ArrayList<>();
         List<MSOption> userList = new ArrayList<>();
-        for(LarkUserInfo item: larkUserInfos){
+        for (LarkUserInfo item : larkUserInfos) {
             MSOption msOption = new MSOption();
             msOption.setText(item.getName_en());
             msOption.setValue(item.getUser_key());
             userList.add(msOption);
         }
-        for(LarkFieldConf item : larkSimpleFields){
+        for (LarkFieldConf item : larkSimpleFields) {
             //ms自带多个附件，跳过此字段
-            if("multi_file".equals(item.getField_type_key()) || "file".equals(item.getField_type_key())){
+            if ("multi_file".equals(item.getField_type_key()) || "file".equals(item.getField_type_key())) {
                 continue;
             }
             PlatformCustomFieldItemDTO temp = new PlatformCustomFieldItemDTO();
@@ -429,11 +459,11 @@ public class LarkPlatform extends AbstractPlatform {
         return platformCustomFieldItemDTOS;
     }
 
-    public void settingValue(PlatformCustomFieldItemDTO temp, LarkFieldConf item, Map<String, LarkSimpleField> larkSimpleFieldMap, List<MSOption> userList, List<DemandDTO> demandDTOS){
+    public void settingValue(PlatformCustomFieldItemDTO temp, LarkFieldConf item, Map<String, LarkSimpleField> larkSimpleFieldMap, List<MSOption> userList, List<DemandDTO> demandDTOS) {
         //必填
-        if(item.getIs_required() == 1) temp.setRequired(true);
+        if (item.getIs_required() == 1) temp.setRequired(true);
         //默认值
-        if(item.getDefault_value().getDefault_appear() == 1) temp.setDefaultValue(item.getDefault_value().getValue());
+        if (item.getDefault_value().getDefault_appear() == 1) temp.setDefaultValue(item.getDefault_value().getValue());
         //名称
         temp.setName(item.getField_name());
         //标示
@@ -445,7 +475,7 @@ public class LarkPlatform extends AbstractPlatform {
         //id
         temp.setId(item.getField_key());
 
-        if(StringUtils.equals(item.getField_type_key(), "bool")){
+        if (StringUtils.equals(item.getField_type_key(), "bool")) {
             List<MSOption> msOptionList = new ArrayList<>();
             MSOption mTrue = new MSOption();
             MSOption mFalse = new MSOption();
@@ -456,38 +486,38 @@ public class LarkPlatform extends AbstractPlatform {
             mFalse.setValue("false");
             msOptionList.add(mFalse);
             temp.setOptions(JSON.toJSONString(msOptionList));
-        }else if(StringUtils.equals(item.getField_type_key(), "business")){
+        } else if (StringUtils.equals(item.getField_type_key(), "business")) {
             LarkSimpleField larkSimpleField1 = larkSimpleFieldMap.get("business");
             List<MSOption> msOptionList = new ArrayList<>();
-            for(LarkOption ite: larkSimpleField1.getOptions()){
-                if(ite == null || ite.getChildren() == null){
+            for (LarkOption ite : larkSimpleField1.getOptions()) {
+                if (ite == null || ite.getChildren() == null) {
                     continue;
                 }
-                for(LarkOption it: ite.getChildren()){
+                for (LarkOption it : ite.getChildren()) {
                     MSOption msOption = new MSOption();
-                    msOption.setText(ite.getLabel()+" / "+it.getLabel());
+                    msOption.setText(ite.getLabel() + " / " + it.getLabel());
                     msOption.setValue(it.getValue());
                     msOptionList.add(msOption);
                 }
             }
             temp.setOptions(JSON.toJSONString(msOptionList));
-        }else if(StringUtils.equals(item.getField_type_key(), "tree_select")){
+        } else if (StringUtils.equals(item.getField_type_key(), "tree_select")) {
             List<MSOption> msOptionList = new ArrayList<>();
-            for(LarkOptionConf ite: item.getOptions()){
-                for(LarkOptionConf it: ite.getChildren()){
+            for (LarkOptionConf ite : item.getOptions()) {
+                for (LarkOptionConf it : ite.getChildren()) {
                     MSOption msOption = new MSOption();
-                    msOption.setText(ite.getLabel()+" / "+it.getLabel());
-                    msOption.setValue(ite.getValue()+"&"+it.getValue());
+                    msOption.setText(ite.getLabel() + " / " + it.getLabel());
+                    msOption.setValue(ite.getValue() + "&" + it.getValue());
                     msOptionList.add(msOption);
                 }
             }
             temp.setOptions(JSON.toJSONString(msOptionList));
-        } else if(StringUtils.equals(item.getField_type_key(), "multi_user") ||
-                StringUtils.equals( "user", item.getField_type_key())){
+        } else if (StringUtils.equals(item.getField_type_key(), "multi_user") ||
+                StringUtils.equals("user", item.getField_type_key())) {
             temp.setOptions(JSON.toJSONString(userList));
-        } else if(StringUtils.equals(item.getField_type_key(), "work_item_related_select")){
+        } else if (StringUtils.equals(item.getField_type_key(), "work_item_related_select")) {
             List<MSOption> msOptionList = new ArrayList<>();
-            for(DemandDTO ite : demandDTOS){
+            for (DemandDTO ite : demandDTOS) {
                 MSOption mo = new MSOption();
                 mo.setText(ite.getName());
                 mo.setValue(ite.getId());
@@ -495,7 +525,7 @@ public class LarkPlatform extends AbstractPlatform {
             }
             temp.setOptions(JSON.toJSONString(msOptionList));
         } else {
-            if(item.getOptions() != null && item.getOptions().size() != 0){
+            if (item.getOptions() != null && item.getOptions().size() != 0) {
                 temp.setOptions(item.getMsLarkOption());
             } else {
                 temp.setOptions(larkSimpleField.getMsLarkOption());
@@ -526,7 +556,7 @@ public class LarkPlatform extends AbstractPlatform {
     }
 
     @Override
-    public void syncAllIssues(SyncAllIssuesRequest syncRequest){
+    public void syncAllIssues(SyncAllIssuesRequest syncRequest) {
         List<Map> zentaoIssues = new ArrayList<>();
         LarkProjectConfig larkProjectConfig = JSON.parseObject(syncRequest.getProjectConfig(), LarkProjectConfig.class);
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = getThirdPartCustomField(syncRequest.getProjectConfig());
@@ -537,16 +567,33 @@ public class LarkPlatform extends AbstractPlatform {
 
         System.out.println("start get item project all issus");
 //        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.getWorkItemAll(workItemRequest);
-        List<LarkWorkItemInfo> larkWorkItemInfos = larkAbstractClient.searchWorkItemAll(getLarkSWI(larkProjectConfig.getDemandId()), "issue");
+        //获取无迭代需求关联缺陷
+        List<LarkWorkItemInfo> larkWorkItemInfos=new ArrayList<>();
+        if(StringUtils.isNotBlank(larkProjectConfig.getDemandId())) {
+            larkWorkItemInfos.addAll(larkAbstractClient.searchWorkItemAll(getLarkSWI(larkProjectConfig.getDemandId(), "_field_linked_story"), "issue"));
 //        checkIssueByDemandId(larkWorkItemInfos, larkProjectConfig.getDemandId());
-        System.out.println("get work Item size:"+larkWorkItemInfos.size());
+        }
+
+        if(StringUtils.isNotBlank(larkProjectConfig.getIterationId())) {
+            //获取迭代关联需求下的缺陷
+            //获取关联迭代的需求
+            List<LarkWorkItemInfo> demandInfos=new ArrayList<>();
+            demandInfos.addAll(larkAbstractClient.searchWorkItemAll(getLarkSWI(larkProjectConfig.getIterationId(), larkAbstractClient.ITERATION_FIELD_ID), "story"));
+            StringBuilder demandStb=new StringBuilder();
+            for (int i = 0; i < demandInfos.size(); i++) {
+                demandStb=demandStb.append(demandInfos.get(i).getId()).append(",");
+                           }
+
+            larkWorkItemInfos.addAll(larkAbstractClient.searchWorkItemAll(getLarkSWI((demandStb.substring(0,demandStb.length()-1).toString()), "_field_linked_story"), "issue"));
+        }
+        System.out.println("get work Item size:" + larkWorkItemInfos.size());
         SyncAllIssuesResult syncIssuesResult = new SyncAllIssuesResult();
         //找出ms需要添加的缺陷
         List<IssuesWithBLOBs> issuesWithBLOBsList = getMSAddIssues(larkWorkItemInfos, null, platformCustomFieldItemDTOS);
         syncIssuesResult.setAddIssues(issuesWithBLOBsList);
-        System.out.println("get work Item size:"+syncIssuesResult.getAddIssues().size());
+        System.out.println("get work Item size:" + syncIssuesResult.getAddIssues().size());
         this.defaultCustomFields = syncRequest.getDefaultCustomFields();
-        for(IssuesWithBLOBs item : syncIssuesResult.getAddIssues()){
+        for (IssuesWithBLOBs item : syncIssuesResult.getAddIssues()) {
             zentaoIssues.add(JSON.parseMap(JSON.toJSONString(item)));
         }
         try {
@@ -556,29 +603,34 @@ public class LarkPlatform extends AbstractPlatform {
                 zentaoIssues = filterSyncZentaoIssuesByCreated(zentaoIssues, syncRequest);
             }
             syncIssuesResult.setUpdateIssues(getMSUpdateIssues(larkWorkItemInfos, null, platformCustomFieldItemDTOS));
-            System.out.println("get work Item size:"+syncIssuesResult.getUpdateIssues().size());
+            System.out.println("get work Item size:" + syncIssuesResult.getUpdateIssues().size());
             syncIssuesResult.getUpdateIssues().addAll(syncIssuesResult.getAddIssues());
             HashMap<Object, Object> syncParam = buildSyncAllParam(syncIssuesResult);
             syncRequest.getHandleSyncFunc().accept(syncParam);
-            System.out.println("syncAllIssues dome add Issues size:"+syncIssuesResult.getAddIssues().size()
-            +" update Issues size:"+syncIssuesResult.getUpdateIssues().size()
-            +" all ids size:"+syncIssuesResult.getAllIds().size()
-            +" del issues size:"+syncIssuesResult.getDeleteIssuesIds().size());
+            System.out.println("syncAllIssues dome add Issues size:" + syncIssuesResult.getAddIssues().size()
+                    + " update Issues size:" + syncIssuesResult.getUpdateIssues().size()
+                    + " all ids size:" + syncIssuesResult.getAllIds().size()
+                    + " del issues size:" + syncIssuesResult.getDeleteIssuesIds().size());
         } catch (Exception e) {
             LogUtil.error(e);
             MSPluginException.throwException(e);
         }
     }
 
-    public LarkSearchWorkItemRequest getLarkSWI(String dId){
+    public LarkSearchWorkItemRequest getLarkSWI(String dId, String paramKey) {
         LarkSearchWorkItemRequest larkWorkItemRequest = new LarkSearchWorkItemRequest();
         larkWorkItemRequest.setPage_num(1l);
         LarkSearchGroup larkSearchGroup = new LarkSearchGroup();
         larkSearchGroup.setConjunction("AND");
         LarkSearchParam larkSearchParam = new LarkSearchParam();
         larkSearchParam.setOperator("HAS ANY OF");
-        larkSearchParam.setParam_key("_field_linked_story");
-        larkSearchParam.setValue(Arrays.asList(Long.parseLong(dId)));
+        //
+        larkSearchParam.setParam_key(paramKey);
+        //多个需求以逗号分割
+        String[] demandIds = dId.split(",");
+
+        larkSearchParam.setValue(Arrays.stream(demandIds).mapToInt(Integer::valueOf).toArray());
+
         larkSearchGroup.getSearch_params().add(larkSearchParam);
         larkWorkItemRequest.setSearch_group(larkSearchGroup);
         return larkWorkItemRequest;
@@ -586,12 +638,12 @@ public class LarkPlatform extends AbstractPlatform {
 
     public List<Map> filterSyncZentaoIssuesByCreated(List<Map> zentaoIssues, SyncAllIssuesRequest syncRequest) {
         List<Map> filterIssues = zentaoIssues.stream().filter(item -> {
-            if(syncRequest.getCreateTime() == null){
+            if (syncRequest.getCreateTime() == null) {
                 return true;
             } else {
                 long createTimeMills = 0;
                 try {
-                    createTimeMills = Long.parseLong(item.get("createTime")+"");
+                    createTimeMills = Long.parseLong(item.get("createTime") + "");
                     if (syncRequest.isPre()) {
                         return createTimeMills <= syncRequest.getCreateTime().longValue();
                     } else {

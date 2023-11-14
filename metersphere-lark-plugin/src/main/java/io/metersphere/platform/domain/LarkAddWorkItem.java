@@ -154,10 +154,10 @@ public class LarkAddWorkItem {
                 break;
             case "multi_user":
                 //飞书的bug特殊处理一下
-                if(StringUtils.equals("issue_operator", item.getCustomData()) || StringUtils.equals("issue_operator", item.getCustomData())){
-                    larkFieldValuePairs.setField_value(item.getValue());
-                    break;
-                }
+//                if(StringUtils.equals("issue_operator", item.getCustomData()) || StringUtils.equals("issue_operator", item.getCustomData())){
+//                    larkFieldValuePairs.setField_value(item.getValue());
+//                    break;
+//                }
                 List<String> temp = JSON.parseArray(item.getValue()+"");
                 larkFieldValuePairs.setField_value(temp);
                 break;

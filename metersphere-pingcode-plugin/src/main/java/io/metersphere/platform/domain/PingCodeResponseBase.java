@@ -1,6 +1,6 @@
 package io.metersphere.platform.domain;
 
-import im.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.JSON;
 import lombok.Data;
 import java.util.List;
 

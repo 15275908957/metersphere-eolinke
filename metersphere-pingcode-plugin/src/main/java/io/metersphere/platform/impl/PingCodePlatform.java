@@ -1,8 +1,8 @@
 package io.metersphere.platform.impl;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.base.domain.IssuesWithBLOBs;
 import io.metersphere.platform.api.AbstractPlatform;
 import io.metersphere.platform.commons.FieldTypeMapping;
@@ -29,6 +29,7 @@ public class PingCodePlatform extends AbstractPlatform {
     protected PingCodeProjectConfig projectConfig;
 
     public PingCodePlatform(PlatformRequest request) {
+
         try{
             super.key = PingCodePlatformMetaInfo.KEY;
             super.request = request;
@@ -117,7 +118,7 @@ public class PingCodePlatform extends AbstractPlatform {
         return request;
     }
 
-    @Override
+//    @Override
     public byte[] getAttachmentContent(String fileKey) {
         return  pingCodeClient.getAttachmentContent(fileKey);
     }
@@ -190,7 +191,7 @@ public class PingCodePlatform extends AbstractPlatform {
     @Override
     public void syncAllIssues(SyncAllIssuesRequest syncRequest) {
         PingCodeProjectConfig projectConfig = getProjectConfig(syncRequest.getProjectConfig());
-        System.out.println("1");
+        System.out.println("1.1");
         this.isThirdPartTemplate = projectConfig.isThirdPartTemplate();
         if (projectConfig.isThirdPartTemplate()) {
             super.defaultCustomFields = getCustomFieldsValuesString(getThirdPartCustomField(syncRequest.getProjectConfig()));
@@ -246,9 +247,12 @@ public class PingCodePlatform extends AbstractPlatform {
             System.out.println("9");
             startAt += maxResults;
         } while (currentSize >= maxResults);
+        syncIssuesResult.getAllIds();
+        System.out.println("9.1");
         System.out.println("实际返回实例"+JSON.toJSONString(syncIssuesResult.getUpdateIssues().get(0)));
+        System.out.println("9.2");
         System.out.println("实际返回实例ALLIDS"+JSON.toJSONString(syncIssuesResult.getAllIds()));
-//        System.out.println("实际返回实例ALLIDS"+JSON.toJSONString(syncIssuesResult.getAttachmentMap()));
+        System.out.println("9.3");
         HashMap<Object, Object> syncParam = buildSyncAllParam(syncIssuesResult);
         System.out.println("10");
         syncRequest.getHandleSyncFunc().accept(syncParam);
@@ -609,6 +613,9 @@ public class PingCodePlatform extends AbstractPlatform {
         List<PingCodeShowTemplate> pingCodeShowTemplates = JSON.parseArray(projectConfig.getParamNames(), PingCodeShowTemplate.class);
         // 懒汉模式，不管用不用先请求一下
         List<PingCodeIssueProperties> properties = pingCodeClient.getIssueProperties(projectConfig.getPingCodeIssueTypeId(), "scrum");
+        List<PingCodeVersion> pingCodeVersions = pingCodeClient.getVersion(projectConfig);
+        List<SelectOption> version = new ArrayList<>();
+
         List<PingCodeProjectUser> userList = pingCodeClient.getProjectUser(projectConfig);
         for(PingCodeShowTemplate pingCodeShowTemplate:pingCodeShowTemplates){
             PlatformCustomFieldItemDTO customField = new PlatformCustomFieldItemDTO();
@@ -693,8 +700,15 @@ public class PingCodePlatform extends AbstractPlatform {
                     customField.setId("version");
                     customField.setCustomData("version");
                     customField.setType(CustomFieldType.SELECT.getValue());
-                    List<SelectOption> version = new ArrayList<>();
-                    List<PingCodeVersion> pingCodeVersions = pingCodeClient.getVersion(projectConfig);
+                    for(PingCodeVersion item: pingCodeVersions){
+                        version.add(new SelectOption(item.getName()+" "+item.getStage().getName(),item.getId()));
+                    }
+                    customField.setOptions(JSON.toJSONString(version));
+                    break;
+                case "复现发布号":
+                    customField.setId("replay_version");
+                    customField.setCustomData("replay_version");
+                    customField.setType(CustomFieldType.SELECT.getValue());
                     for(PingCodeVersion item: pingCodeVersions){
                         version.add(new SelectOption(item.getName()+" "+item.getStage().getName(),item.getId()));
                     }

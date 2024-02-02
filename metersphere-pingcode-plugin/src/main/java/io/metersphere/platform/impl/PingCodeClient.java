@@ -1,8 +1,8 @@
 package io.metersphere.platform.impl;
 
-import im.metersphere.plugin.exception.MSPluginException;
-import im.metersphere.plugin.utils.JSON;
-import im.metersphere.plugin.utils.LogUtil;
+import io.metersphere.plugin.exception.MSPluginException;
+import io.metersphere.plugin.utils.JSON;
+import io.metersphere.plugin.utils.LogUtil;
 import io.metersphere.platform.Utils.RedisUtils;
 import io.metersphere.platform.domain.*;
 import io.metersphere.platform.api.BaseClient;
@@ -30,12 +30,12 @@ public class PingCodeClient extends BaseClient {
     public void refreshToken(String configStr){
         System.out.println("使用个人凭证："+configStr);
         PingCodeConfig config = JSON.parseObject(configStr, PingCodeConfig.class);
-        String token = RedisUtils.getRedisUtils(config.getClientId(), config.getClientSecret()).getToken();
-        if(StringUtils.isNotBlank(token)){
-            this.client_Secret = config.getClientSecret();
-            this.client_id = config.getClientId();
-            this.access_token = token;
-        } else {
+//        String token = RedisUtils.getRedisUtils(config.getClientId(), config.getClientSecret()).getToken();
+//        if(StringUtils.isNotBlank(token)){
+//            this.client_Secret = config.getClientSecret();
+//            this.client_id = config.getClientId();
+//            this.access_token = token;
+//        } else {
             ResponseEntity<String> response = null;
             String accessToken = null;
             try {
@@ -47,13 +47,13 @@ public class PingCodeClient extends BaseClient {
                 this.client_Secret = config.getClientSecret();
                 this.client_id = config.getClientId();
                 this.access_token = accessToken;
-                RedisUtils.getRedisUtils(this.client_id, this.client_Secret).setToken(accessToken, 60 * 60 * 24 * 10);
+//                RedisUtils.getRedisUtils(this.client_id, this.client_Secret).setToken(accessToken, 60 * 60 * 24 * 10);
             }catch (Exception e) {
                 // 只捕获异常，不做任何抛出，不做任何变更，还用公用token执行操作
                 LogUtil.error(e.getMessage(), e);
             }
 
-        }
+//        }
     }
 
     public PingCodeGetIssue getIssues(String issuesId) {
@@ -131,8 +131,8 @@ public class PingCodeClient extends BaseClient {
     }
 
     public String auth4AccessToken() {
-        String token = RedisUtils.getRedisUtils(this.client_id, this.client_Secret).getToken();
-        if(StringUtils.isNotBlank(token)) return token;
+//        String token = RedisUtils.getRedisUtils(this.client_id, this.client_Secret).getToken();
+//        if(StringUtils.isNotBlank(token)) return token;
         ResponseEntity<String> response = null;
         String accessToken = null;
         try {
@@ -154,7 +154,7 @@ public class PingCodeClient extends BaseClient {
             MSPluginException.throwException(e.getMessage());
         }
         // 缓存10天
-        RedisUtils.getRedisUtils(this.client_id , this.client_Secret).setToken(accessToken, 60 * 60 * 24 * 10);
+//        RedisUtils.getRedisUtils(this.client_id , this.client_Secret).setToken(accessToken, 60 * 60 * 24 * 10);
         return accessToken;
     }
 

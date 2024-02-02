@@ -1,10 +1,9 @@
 import io.metersphere.platform.domain.*;
 import io.metersphere.platform.impl.PingCodePlatform;
 import io.metersphere.plugin.utils.JSON;
-import org.apache.commons.lang3.StringEscapeUtils;
+//import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +11,12 @@ import java.util.Map;
 public class pingcodeClientTest {
     PingCodePlatform platform;
 
-    @Test
-    public void testRedis(){
-        Jedis jedis = new Jedis("127.0.0.1", 6379);
-        jedis.auth("Password123@redis");
-
-    }
+//    @Test
+//    public void testRedis(){
+//        Jedis jedis = new Jedis("127.0.0.1", 6379);
+//        jedis.auth("Password123@redis");
+//
+//    }
 
     String names = "[{\"name\":\"标题\",\"required\":true,\"defaultValue\":null},\n" +
             "{\"name\":\"描述\",\"required\":false,\"defaultValue\":null},{\"name\":\"所属用户故事\",\"required\":false,\"defaultValue\":null},{\"name\":\"负责人\",\"required\":false,\"defaultValue\":null},{\"name\":\"开始时间\",\"required\":false,\"defaultValue\":null},{\"name\":\"截止时间\",\"required\":false,\"defaultValue\":null},{\"name\":\"优先级\",\"required\":false,\"defaultValue\":null},{\"name\":\"故事点\",\"required\":false,\"defaultValue\":null},{\"name\":\"迭代\",\"required\":false,\"defaultValue\":null},{\"name\":\"所属发布\",\"required\":false,\"defaultValue\":null},{\"name\":\"预估工时\",\"required\":false,\"defaultValue\":null},{\"name\":\"关注人\",\"required\":false,\"defaultValue\":null},{\"name\":\"单行文本N\",\"required\":false,\"defaultValue\":null},{\"name\":\"多行文本n\",\"required\":false,\"defaultValue\":null},{\"name\":\"单选n\",\"required\":false,\"defaultValue\":null},{\"name\":\"多选n\",\"required\":false,\"defaultValue\":null},{\"name\":\"数字n\",\"required\":false,\"defaultValue\":null},{\"name\":\"日期n\",\"required\":false,\"defaultValue\":null},{\"name\":\"成员dn\",\"required\":false,\"defaultValue\":null},{\"name\":\"成员ddn\",\"required\":false,\"defaultValue\":null}]";
@@ -27,17 +26,20 @@ public class pingcodeClientTest {
         PlatformRequest platformRequest = new PlatformRequest();
         PingCodeConfig pingCodeConfig = new PingCodeConfig();
         //公司测试
-        pingCodeConfig.setClientId("BBfzVYFwGACh");
-        pingCodeConfig.setClientSecret("kAmfHZIuRjeXQqayRqRmWmcm");
-        platformRequest.setWorkspaceId("638d65a97d55e46dcc2247b9");
 
         //个人测试
-//        pingCodeConfig.setClientId("XQaNuYdGYXlO");
-//        pingCodeConfig.setClientSecret("uPpLYrXQceHXbzboKfGfjLRL");
-//        platformRequest.setWorkspaceId("600e7e3928a35e3e0034c6f3");
         pingCodeConfig.setUrl("https://open.pingcode.com");
+        pingCodeConfig.setClientId("LiqgBAhVmNyq");
+        pingCodeConfig.setClientSecret("lkStofrJFXPClqrnnAahdcPc");
         platformRequest.setIntegrationConfig(JSON.toJSONString(pingCodeConfig));
+
         platform = new PingCodePlatform(platformRequest);
+    }
+
+
+    @Test
+    public void wwwv(){
+        platform.validateIntegrationConfig();
     }
 
     @Test
@@ -110,7 +112,7 @@ public class pingcodeClientTest {
         PingCodeProjectConfig p = new PingCodeProjectConfig();
         p.setPingCodeKey("600e7e3928a35e3e0034c6f3");
         p.setPingCodeIssueTypeId("bug");
-        System.out.println(StringEscapeUtils.unescapeJava(JSON.toJSONString(platform.getWorkItemIssue(p))));
+//        System.out.println(StringEscapeUtils.unescapeJava(JSON.toJSONString(platform.getWorkItemIssue(p))));
     }
 
     @Test

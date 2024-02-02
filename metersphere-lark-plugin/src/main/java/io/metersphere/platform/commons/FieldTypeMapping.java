@@ -4,7 +4,7 @@ import io.metersphere.platform.constants.CustomFieldType;
 
 public enum FieldTypeMapping {
     //只记录需要特殊处理的
-    MULTI_TEXT(CustomFieldType.TEXTAREA.getValue(),"multi_text"),
+    MULTI_TEXT(CustomFieldType.RICH_TEXT.getValue(),"multi_text"),
     TEXT(CustomFieldType.INPUT.getValue(),"text"),
     WORK_ITEM_TEMPLATE(CustomFieldType.SELECT.getValue(),"work_item_template"),
     MULTI_SELECT(CustomFieldType.MULTIPLE_SELECT.getValue(),"multi_select"),

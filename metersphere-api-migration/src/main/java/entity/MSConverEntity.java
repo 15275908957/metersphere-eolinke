@@ -13,6 +13,7 @@ public class MSConverEntity {
     private String secretKey;
     private String account;
     private String password;
+    private String msVersion;
 
     public MSConverEntity(){}
 

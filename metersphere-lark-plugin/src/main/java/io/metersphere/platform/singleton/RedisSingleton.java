@@ -1,15 +1,10 @@
 package io.metersphere.platform.singleton;
 
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
-import com.alibaba.fastjson2.JSONObject;
 import com.google.gson.Gson;
 import io.metersphere.platform.domain.LarkRedisPCFID;
 import io.metersphere.platform.domain.PlatformCustomFieldItemDTO;
 import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.Jedis;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;

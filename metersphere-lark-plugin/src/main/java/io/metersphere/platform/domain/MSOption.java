@@ -8,4 +8,11 @@ import lombok.Setter;
 public class MSOption {
     private String text;
     private Object value;
+
+    public MSOption(String label, Object value) {
+        this.text = label;
+        this.value = value;
+    }
+
+    public MSOption(){}
 }

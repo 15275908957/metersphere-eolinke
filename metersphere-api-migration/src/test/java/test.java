@@ -1,7 +1,7 @@
-import com.alibaba.fastjson2.JSON;
+import commons.URL;
 import org.junit.Before;
 import org.junit.Test;
-import utilsss.Conver;
+import query.Conver;
 import utilsss.JOSNUtils;
 import utilsss.UseFile;
 
@@ -30,7 +30,7 @@ public class test {
     public void loadClient(){
         String sigature = sigature("O2ud00YoulsZ7ArJ","mw9LAXMk9hGYXrvu");
 //        conver = new Conver("http://10.1.14.202:8081", "O2ud00YoulsZ7ArJ", "dfzC1Pc5P8v9Og4HexYEyYQ0z3tBXNdkcZf7y8DyHmo=");
-        conver = Conver.getInstanceAccountPassword("http://10.1.14.202:8081","9VtEXl2FmLFdN3hKqMoSSgLLQnu41mW2qRqX7i2dQ7VdhbjGfripk2PMpBXs3gQ67S+g1wdcgYRLTdouIIblVA==","953e1999-a533-4bfb-9449-5170b5f2e972");
+//        conver = Conver.getInstanceAccountPassword("http://10.1.14.202:8081","9VtEXl2FmLFdN3hKqMoSSgLLQnu41mW2qRqX7i2dQ7VdhbjGfripk2PMpBXs3gQ67S+g1wdcgYRLTdouIIblVA==","953e1999-a533-4bfb-9449-5170b5f2e972");
     }
 
     @Test
@@ -98,4 +98,12 @@ public class test {
         JOSNUtils.getModuleIDByArrayStr(a,mon,projectId);
         System.out.println(a);
     }
+    
+    @Test
+    public void sss(){
+        System.out.println(URL.USER_WORKSPACE("v2.10.0-lts-89acace0"));
+
+    }
+
+
 }

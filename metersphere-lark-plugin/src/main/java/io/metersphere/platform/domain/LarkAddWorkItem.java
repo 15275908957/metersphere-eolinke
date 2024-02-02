@@ -1,5 +1,6 @@
 package io.metersphere.platform.domain;
 
+import com.alibaba.fastjson2.JSONArray;
 import io.metersphere.plugin.utils.JSON;
 import lombok.Data;
 import lombok.Getter;
@@ -41,6 +42,7 @@ public class LarkAddWorkItem {
                 field_value_pairs.add(larkFieldValuePairs);
             }
         }
+
 //        this.name = data.getTitle();
 //        // 固定把描述先添加进去
 //        LarkFieldValuePairs temp = new LarkFieldValuePairs();
@@ -71,7 +73,7 @@ public class LarkAddWorkItem {
                 break;
             case "business":
 //                String businessValue = item.getValue()+"";
-//                key = businessValue.split("&");
+//                key = businessValue.split("/");
 //                @Data
 //                class BusinessChildren{
 //                    private String value;
@@ -82,6 +84,9 @@ public class LarkAddWorkItem {
 //                BusinessChildren businessChildrenSub = new BusinessChildren();
 //                businessChildren.setChildren(businessChildrenSub);
 //                businessChildrenSub.setValue(key[1]);
+//                larkFieldValuePairs.setField_value(businessChildren);
+//                larkFieldValuePairs.setField_value((item.getValue()+"").replace("\"",""));
+//                larkFieldValuePairs.setField_name(item.getName());
                 larkFieldValuePairs.setField_value(item.getValue()+"");
 //                @Getter
 //                @Setter
@@ -153,12 +158,14 @@ public class LarkAddWorkItem {
                 larkFieldValuePairs.setField_value(multiSelectList);
                 break;
             case "multi_user":
+                List<String> temp = new ArrayList<>();
                 //飞书的bug特殊处理一下
-                if(StringUtils.equals("issue_operator", item.getCustomData()) || StringUtils.equals("issue_operator", item.getCustomData())){
-                    larkFieldValuePairs.setField_value(item.getValue());
+                if(StringUtils.equals("issue_operator", item.getCustomData()) || StringUtils.equals("issue_reporter", item.getCustomData())){
+                    temp.add(item.getValue()+"");
+                    larkFieldValuePairs.setField_value(temp);
                     break;
                 }
-                List<String> temp = JSON.parseArray(item.getValue()+"");
+                temp = JSON.parseArray(item.getValue()+"");
                 larkFieldValuePairs.setField_value(temp);
                 break;
             case "work_item_related_select":
@@ -170,6 +177,7 @@ public class LarkAddWorkItem {
                 larkFieldValuePairs.setField_value(item.getValue());
                 if(StringUtils.equals(item.getCustomData(), "name")){
                     data.setTitle(item.getValue()+"");
+//                    this.name = item.getValue()+"";
                 } else if(StringUtils.equals(item.getCustomData(), "description")){
                     data.setDescription(item.getValue()+"");
                 }

@@ -18,27 +18,61 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
+    <!-- https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2 -->
+
 
     <dependencies>
+
         <dependency>
             <groupId>io.metersphere</groupId>
             <artifactId>metersphere-platform-plugin-sdk</artifactId>
-            <version>1.4.0</version>
+            <version>1.6.0</version>
             <!-- 打包进去会冲突 -->
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>2.0.19</version>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.10.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>io.metersphere</groupId>-->
+<!--            <artifactId>metersphere-check-lincense</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <!-- 将依赖一起打入 jar 包，如果除了 metersphere-platform-plugin-sdk 没有其他依赖，可以不需要 -->
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>2.6</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>Main.Main</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>
@@ -58,6 +92,18 @@
                     <target>16</target>
                 </configuration>
             </plugin>
+
+
+
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    &lt;!&ndash; maven打包时会将外部引入的jar包（比如在根目录下或resource文件下新加外部jar包）打包到项目jar &ndash;&gt;-->
+<!--                    <includeSystemScope>true</includeSystemScope>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
         </plugins>
     </build>
 

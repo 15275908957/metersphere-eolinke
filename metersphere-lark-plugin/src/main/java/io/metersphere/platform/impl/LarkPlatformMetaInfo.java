@@ -12,7 +12,7 @@ public class LarkPlatformMetaInfo extends AbstractPlatformMetaInfo {
 
     @Override
     public String getVersion() {
-        return "2.4.0";
+        return "2.10.6";
     }
 
     @Override

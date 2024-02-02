@@ -1,6 +1,5 @@
 package io.metersphere.platform.conver;
 
-import io.metersphere.platform.commons.RequestTypeEnum;
 import io.metersphere.platform.domain.EOlinker.*;
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,6 +8,7 @@ import java.util.*;
 public class EolinkerUtils {
 
     public static List<ApiInfoEntity> getEolinkerAPIList(List<ApiGroupInfoEntity> apiGroupInfoEntities){
+
         List<ApiInfoEntity> list = new ArrayList<>();
         if(apiGroupInfoEntities != null && apiGroupInfoEntities.size() != 0){
             for(ApiGroupInfoEntity item: apiGroupInfoEntities){

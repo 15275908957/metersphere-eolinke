@@ -11,4 +11,5 @@ public class LarkOption {
     private String label;
     private String value;
     private List<LarkOption> children;
+    private String work_item_type_key;
 }

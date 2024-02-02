@@ -15,6 +15,11 @@ public enum URLEnum {
     DELETE_WORK_ITEM("/open_api/%s/work_item/%s/%s", HttpMethod.DELETE),
     UPLOAD_FILE("/open_api/%s/work_item/%s/%s/file/upload", HttpMethod.POST),
     UPDATE_WORK_ITEM("/open_api/%s/work_item/%s/%s", HttpMethod.PUT),
+
+    WORKFLOW_QUERY("/open_api/%s/work_item/%s/%s/workflow/query", HttpMethod.POST),
+
+    NODE_STATE_CHANGE("/open_api/%s/workflow/%s/%s/node/state_change", HttpMethod.POST),
+
     TEAMS_ALL("/open_api/%s/teams/all", HttpMethod.GET),
     GET_SPACE_FIELD("/open_api/%s/field/all", HttpMethod.POST);
 

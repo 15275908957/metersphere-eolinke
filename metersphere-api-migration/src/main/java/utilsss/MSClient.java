@@ -22,6 +22,7 @@ public class MSClient {
     private static String sig;
     private static String token;
     private static String session;
+    private static String msVersion;
 
     private static MSClient msClient = new MSClient();
 
@@ -34,36 +35,44 @@ public class MSClient {
         return msClient;
     }
 
-    public static MSClient getMsClientAccountPassword(String url, String tokenTemp, String sessionTemp){
+    public static MSClient getMsClientAccountPassword(String url, String tokenTemp, String sessionTemp, String version){
         host = url;
         token = tokenTemp;
         session = sessionTemp;
+        msVersion = version;
         return msClient;
     }
 
     public HeaderEntity[] getHeaders(){
-        HeaderEntity[] a = new HeaderEntity[2];
+        HeaderEntity[] a = null;
 //        a[0] = new HeaderEntity("Content-Type", "application/json;charset=UTF-8");
         if(this.ak != null && this.sig != null){
+            a = new HeaderEntity[2];
             a[0] = new HeaderEntity("accessKey", this.ak);
             a[1] = new HeaderEntity("signature", this.sig);
         }else {
+            a = new HeaderEntity[3];
             a[0] = new HeaderEntity("CSRF-TOKEN", this.token);
             a[1] = new HeaderEntity("X-AUTH-TOKEN", this.session);
+            a[2] = new HeaderEntity("Cookie", "SESSION="+this.session);
         }
         return a;
     }
 
-    private String getURL(URL url){
-        return host+url.url;
+    private String getURL(String url){
+        return host+url;
     }
 
     public String importAPI(String path , String fileName, String requestStr) throws IOException {
-        return importMS(path, fileName, requestStr, getURL(URL.IMPORT_API));
+        return importMS(path, fileName, requestStr, getURL(URL.IMPORT_API(msVersion)));
     }
 
     public String importScenario(String path , String fileName, String requestStr) throws IOException {
-        return importMS(path, fileName, requestStr, getURL(URL.IMPORT_SCENARIO));
+        return importMS(path, fileName, requestStr, getURL(URL.IMPORT_SCENARIO(msVersion)));
+    }
+
+    public String getAPIList(){
+        return null;
     }
 
     public String importMS(String path , String fileName, String requestStr, String url) throws IOException {

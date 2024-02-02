@@ -56,6 +56,7 @@ public class JiraPlatform extends AbstractPlatform {
         super.request = request;
         jiraClientV2 = new JiraClientV2();
         setConfig();
+
     }
 
     public JiraConfig setConfig() {
@@ -128,6 +129,9 @@ public class JiraPlatform extends AbstractPlatform {
                     if (StringUtils.equals(CustomFieldType.RICH_TEXT.getValue(), item.getType())) {
                         item.setValue(dealWithDescription((String) item.getValue(), fileContentMap));
                     }
+                }
+                if(StringUtils.equals("platformId", item.getCustomData())){
+                    item.setValue(issue.getPlatformId());
                 }
             }
 
@@ -757,6 +761,19 @@ public class JiraPlatform extends AbstractPlatform {
             if (b.getType().equals(CustomFieldType.INPUT.getValue())) return 1;
             return a.getType().compareTo(b.getType());
         });
+        // 手动写死jira id字段展示
+        PlatformCustomFieldItemDTO p = new PlatformCustomFieldItemDTO();
+        p.setType(CustomFieldType.INPUT.getValue());
+        p.setKey("platformId");
+        p.setId("platformId");
+        p.setCustomData("platformId");
+//        p.setDefaultValue("此字段为jira系统字段，创建或修改时，无需处理。");
+        p.setRemark("此字段为jira系统字段，创建或修改时，无需处理1。");
+        p.setGlobal(true);
+        p.setSystem(false);
+        p.setThirdPart(true);
+        p.setName("jira缺陷编号");
+        fields.add(p);
         return fields;
     }
 
@@ -1017,7 +1034,6 @@ public class JiraPlatform extends AbstractPlatform {
         }
     }
 
-    @Override
     public byte[] getAttachmentContent(String fileKey) {
         return jiraClientV2.getAttachmentContent(fileKey);
     }

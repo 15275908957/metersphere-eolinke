@@ -1,10 +1,14 @@
-package utilsss;
+package query;
 
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import entity.*;
+import utilsss.JOSNUtils;
+import utilsss.MSClient;
+import utilsss.UseFile;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +31,9 @@ public class Conver {
 //        return conver;
 //    }
 
-    public static Conver getInstanceAccountPassword(String host, String token, String session){
-        LincenseAPI.CheckLicense.checkLicenseByUrl(host);
-        client = MSClient.getMsClientAccountPassword(host, token, session);
+    public static Conver getInstanceAccountPassword(String host, String token, String session, String version){
+//        LincenseAPI.CheckLicense.checkLicenseByUrl(host);
+        client = MSClient.getMsClientAccountPassword(host, token, session,version);
         return conver;
     }
 

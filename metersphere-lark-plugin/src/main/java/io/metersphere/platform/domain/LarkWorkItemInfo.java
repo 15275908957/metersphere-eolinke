@@ -69,6 +69,7 @@ public class LarkWorkItemInfo {
         issues.setId(getMSId());
         issues.setPlatformId(getMSId());
         issues.setPlatform("Lark");
+        issues.setPlatformStatus(sub_stage);
         issues.setUpdateTime(updated_at);
         issues.setCreateTime(created_at);
         HashMap<String, LarkFieldValuePairs> map = new HashMap<>();
@@ -118,10 +119,10 @@ public class LarkWorkItemInfo {
     private void setValue(LarkFieldValuePairs larkFieldValuePairs, PlatformCustomFieldItemDTO item , String userKey, IssuesWithBLOBs issues){
         switch (larkFieldValuePairs.getField_type_key()){
             case "bool":
-                item.setValue(larkFieldValuePairs.getField_value()+"");
+                item.setValue(larkFieldValuePairs.getField_value());
                 break;
             case "business":
-                item.setValue(larkFieldValuePairs.getField_value()+"");
+                item.setValue((larkFieldValuePairs.getField_value()+"").replace("\"",""));
 //                Map<String, Object> businessMap = JSON.parseMap(JSON.toJSONString(larkFieldValuePairs.getField_value()));
 //                Map<String, String> businessMapSub = JSON.parseMap(JSON.toJSONString(businessMap.get("children")));
 //                if(businessMap != null && businessMapSub != null){

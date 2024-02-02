@@ -1,5 +1,6 @@
 package io.metersphere.platform.impl;
 
+import com.alibaba.fastjson2.JSONObject;
 import io.metersphere.base.domain.IssuesWithBLOBs;
 import io.metersphere.platform.commons.ERRCODEEnum;
 import io.metersphere.platform.commons.URLEnum;
@@ -8,6 +9,8 @@ import io.metersphere.platform.api.BaseClient;
 import io.metersphere.plugin.exception.MSPluginException;
 import io.metersphere.plugin.utils.JSON;
 import io.metersphere.plugin.utils.LogUtil;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
@@ -184,6 +187,7 @@ public class LarkAbstractClient extends BaseClient {
     protected HttpHeaders getAuthHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.ACCEPT_ENCODING, "qzip,x-qzip,deflate");
         return headers;
     }
 
@@ -209,8 +213,6 @@ public class LarkAbstractClient extends BaseClient {
         HashMap<String,Object> queryBody = new HashMap<>();
         queryBody.put("plugin_id",PLUGIN_ID);
         queryBody.put("plugin_secret",PLUGIN_SECRET);
-
-        System.out.println("getToken info :"+JSON.toJSONString(queryBody));
         HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(queryBody), getAuthHeader());
         try {
             response = restTemplate.exchange(getUrl(URLEnum.PLUGIN_TOKEN.getUrl()), URLEnum.PLUGIN_TOKEN.getHttpMethod(), requestEntity, String.class);
@@ -281,12 +283,7 @@ public class LarkAbstractClient extends BaseClient {
         return larkSimpleFields;
     }
 
-    public List<LarkUserInfo> getTameUserInfoList() {
-        List<LarkTeam> larkTeamList = getTameUserList();
-        Set<String> userIds = new HashSet<>();
-        for(LarkTeam larkTeam : larkTeamList){
-            userIds.addAll(larkTeam.getUser_keys());
-        }
+    public List<LarkUserInfo> getUserInfo(List userIds){
         ResponseEntity<String> response = null;
         HttpHeaders headers = getAuthHeader();
         headers.add("X-PLUGIN-TOKEN", token);
@@ -305,7 +302,34 @@ public class LarkAbstractClient extends BaseClient {
         }
         Map<String,Object> map = JSON.parseMap(response.getBody());
         Object data = map.get("data");
-        List<LarkUserInfo> larkUserInfos= JSON.parseArray(JSON.toJSONString(data), LarkUserInfo.class);
+        List<LarkUserInfo> larkUserInfos = JSON.parseArray(JSON.toJSONString(data), LarkUserInfo.class);
+        return larkUserInfos;
+    }
+
+    public List<LarkUserInfo> getTameUserInfoList() {
+        List<LarkTeam> larkTeamList = getTameUserList();
+        if(larkTeamList == null || larkTeamList.size() == 0){
+            return new ArrayList<>();
+        }
+        Set<String> userIds = new HashSet<>();
+        for(LarkTeam larkTeam : larkTeamList){
+            userIds.addAll(larkTeam.getUser_keys());
+        }
+        int si = 0;
+        List<String> userIdList = new ArrayList<>();
+        userIdList.addAll(userIds);
+        List<LarkUserInfo> larkUserInfos = new ArrayList<>();
+        List<String> tempUserList = null;
+        for(int i = 0 ; i < Integer.parseInt(userIdList.size()/10+"")+1; i++){
+            tempUserList = new ArrayList<>();
+            for(int index = 0 ; index < 10; index++){
+                if(Integer.parseInt(si+""+index) < userIdList.size()){
+                    tempUserList.add(userIdList.get(Integer.parseInt(si+""+index)));
+                }
+            }
+            larkUserInfos.addAll(getUserInfo(tempUserList));
+            si++;
+        }
         return larkUserInfos;
     }
 
@@ -386,7 +410,53 @@ public class LarkAbstractClient extends BaseClient {
         headers.add("X-PLUGIN-TOKEN", token);
         headers.add("X-USER-KEY", USER_KEY);
         LarkAddWorkItem larkAddWorkItem = new LarkAddWorkItem(issuesRequest, larkSimpleFieldMap, "issue", USER_KEY);
-        HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(larkAddWorkItem), headers);
+//        LarkFieldValuePairs temp = new LarkFieldValuePairs();
+//        larkAddWorkItem.setField_value_pairs();
+        // 赋值模板信息
+        if(larkAddWorkItem.getTemplate_id() == null){
+            Map<String, LarkSimpleField> tempMap = getSpaceField();
+            LarkSimpleField larkSimpleField = tempMap.get("template");
+            larkAddWorkItem.setTemplate_id(Integer.parseInt(larkSimpleField.getOptions().get(0).getValue()));
+        }
+//                //去掉多余字段
+
+        for(LarkFieldValuePairs item : larkAddWorkItem.getField_value_pairs()){
+            if(StringUtils.equals(item.getField_key(),"name")) {
+                larkAddWorkItem.setName(item.getField_value()+"");
+                larkAddWorkItem.getField_value_pairs().remove(item);
+                break;
+            }
+        }
+
+        @Getter
+        @Setter
+        class LarkAddWorkItemTemp {
+            private String work_item_type_key;
+            private String name;
+            private Integer template_id;
+            private List<LarkFieldValuePairsTemp> field_value_pairs = new ArrayList<>();
+
+            @Getter
+            @Setter
+            static
+            class LarkFieldValuePairsTemp{
+                private String field_key;
+                private Object field_value;
+            }
+
+        }
+
+        LarkAddWorkItemTemp temp = new LarkAddWorkItemTemp();
+        temp.setName(larkAddWorkItem.getName());
+        temp.setTemplate_id(larkAddWorkItem.getTemplate_id());
+        temp.setWork_item_type_key(larkAddWorkItem.getWork_item_type_key());
+        for(LarkFieldValuePairs item :larkAddWorkItem.getField_value_pairs()){
+            LarkAddWorkItemTemp.LarkFieldValuePairsTemp a = new LarkAddWorkItemTemp.LarkFieldValuePairsTemp();
+            a.setField_key(item.getField_key());
+            a.setField_value(item.getField_value());
+            temp.getField_value_pairs().add(a);
+        }
+        HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(temp), headers);
 //        Map<String, String> map = JSON.parseMap(issuesRequest.getProjectConfig());
 //        String spaceId = map.get("spaceId");
         try {
@@ -564,6 +634,73 @@ public class LarkAbstractClient extends BaseClient {
             MSPluginException.throwException("添加缺陷失败，获取缺陷异常："+JSON.toJSONString(larkWorkItemInfos));
         }
         issues.setUpdateTime(larkWorkItemInfos.get(0).getUpdated_at());
+        // 修改状态流转
+        List<LarkConnections> list = getWorkFlow(key[0], key[1]);
+        try {
+            for(LarkConnections item : list){
+                if(StringUtils.equals(item.getTarget_state_key().toLowerCase(), issuesRequest.getPlatformStatus().toLowerCase())){
+                    updateNodeStateChange(key[0], key[1], item.getTransition_id());
+                    break;
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         return issues;
+    }
+
+    public void updateNodeStateChange(String projectKey, String workId, Integer nodeId) {
+        HttpHeaders headers = getAuthHeader();
+        headers.add("X-PLUGIN-TOKEN", token);
+        headers.add("X-USER-KEY", USER_KEY);
+        @Getter
+        @Setter
+        class Temp{
+            Integer transition_id;
+        }
+
+        Temp temp = new Temp();
+        temp.setTransition_id(nodeId);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(temp), headers);
+        try {
+            restTemplate.exchange(getUrl(URLEnum.NODE_STATE_CHANGE.getUrl(projectKey, "issue", workId)), URLEnum.NODE_STATE_CHANGE.getHttpMethod(), requestEntity, String.class);
+        }catch (HttpClientErrorException e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(e.getMessage());
+        }
+    }
+
+    public List<LarkConnections> getWorkFlow(String projectKey, String workId) {
+        HttpHeaders headers = getAuthHeader();
+        headers.add("X-PLUGIN-TOKEN", token);
+        headers.add("X-USER-KEY", USER_KEY);
+        @Getter
+        @Setter
+        class Temp{
+            Integer flow_type;
+        }
+
+        Temp temp = new Temp();
+        temp.setFlow_type(1);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(JSON.toJSONString(temp), headers);
+        ResponseEntity<String> response = null;
+        try {
+            response = restTemplate.exchange(getUrl(URLEnum.WORKFLOW_QUERY.getUrl(projectKey, "issue", workId)), URLEnum.WORKFLOW_QUERY.getHttpMethod(), requestEntity, String.class);
+        }catch (HttpClientErrorException e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(ERRCODEEnum.getCodeInfo(e.getResponseBodyAsString()));
+        } catch (Exception e) {
+            LogUtil.error(e.getMessage(), e);
+            MSPluginException.throwException(e.getMessage());
+        }
+        LarkResponseBase larkResponseBase = JSON.parseObject(response.getBody(), LarkResponseBase.class);
+        LarkWorkFlow larkWorkFlow = JSON.parseObject(larkResponseBase.getDataStr(), LarkWorkFlow.class);
+
+        return larkWorkFlow.getConnections();
     }
 }

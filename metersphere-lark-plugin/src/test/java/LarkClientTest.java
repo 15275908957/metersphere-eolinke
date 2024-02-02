@@ -1,4 +1,5 @@
 
+import com.alibaba.fastjson2.JSONObject;
 import com.lark.oapi.Client;
 import com.lark.oapi.core.response.RawResponse;
 import com.lark.oapi.core.token.AccessTokenType;
@@ -38,48 +39,69 @@ public class LarkClientTest {
     }
     LarkConfig larkConfig = new LarkConfig();
 
-    @Before
-    public void loadClient() throws Exception {
+//    @Before
+//    public void loadHuenlijiClient() throws Exception {
 //        PlatformRequest request = new PlatformRequest();
-//        LarkConfig larkConfig = new LarkConfig();
 //        larkConfig.setUrl("https://project.feishu.cn");
-//        larkConfig.setPluginId("MII_6368AC54F10B8002");
-//        larkConfig.setPluginSecret("91B7B426685F188A222D3F3CCACB491F");
-//        larkConfig.setUserKey("7161340112956145665");
+//        larkConfig.setPluginId("MII_650BAC2FBD82C003");
+//        larkConfig.setPluginSecret("C697BA6E84BE65FAE045E7B08A90FBE5");
+//        larkConfig.setUserKey("7241406358686416900");
+//        larkConfig.setSpaceId("650bab169b4ea5d284b5c5c9");
 //        String inConfig = JSON.toJSONString(larkConfig);
 //        request.setIntegrationConfig(inConfig);
 //        client = new LarkPlatform(request);
+//    }
 
+    @Test
+    public void getThirdPartCustomField_hunliji() throws Exception{
+        HashMap<String,String> a = new HashMap<>();
+        a.put("spaceId","617907a1c6bbf993652cb1d8");
+        client.getThirdPartCustomField(JSON.toJSONString(a));
+    }
+
+//    @Before
+//    public void loadLijiaClient() throws Exception {
+//        PlatformRequest request = new PlatformRequest();
+//        larkConfig.setUrl("https://project.feishu.cn");
+//        larkConfig.setPluginId("MII_652515C12C0E4004");
+//        larkConfig.setPluginSecret("66E3AC84B81809961190008AEC9C216F");
+//        larkConfig.setUserKey("7241406358686416900");
+//        larkConfig.setSpaceId("650bab169b4ea5d284b5c5c9");
+//        String inConfig = JSON.toJSONString(larkConfig);
+//        request.setIntegrationConfig(inConfig);
+//        client = new LarkPlatform(request);
+//    }
+
+    @Before
+    public void loadHuenlijiClient() throws Exception {
         PlatformRequest request = new PlatformRequest();
-
         larkConfig.setUrl("https://project.feishu.cn");
         larkConfig.setPluginId("MII_63C4D9A1E1C14003");
         larkConfig.setPluginSecret("ADEC309FEF445FD40ED830976C2E7FB5");
         larkConfig.setUserKey("7152532929715896348");
         larkConfig.setSpaceId("617907a1c6bbf993652cb1d8");
         String inConfig = JSON.toJSONString(larkConfig);
+
         request.setIntegrationConfig(inConfig);
         client = new LarkPlatform(request);
+    }
 
-//        Client client = Client.newBuilder("MII_6389A2D6482C8002", "7D31E0C5D0AF0E19186BCAD66FA3D85E").build();
-//        CreateDocumentResp resp = null;
-//        try{
-//            // 发起请求
-//            resp = client.docx().document()
-//                    .create(CreateDocumentReq.newBuilder()
-//                            .createDocumentReqBody(CreateDocumentReqBody.newBuilder()
-//                                    .title("title")
-//                                    .folderToken("fldcniHf40Vcv1DoEc8SXeuA0Zd")
-//                                    .build())
-//                            .build()
-//                    );
-//        }catch (Exception e){}
-//        // 业务数据处理
-//        System.out.println(Jsons.DEFAULT.toJson(resp.getData()));
+    @Test
+    public void getDemands(){
+        LarkProjectConfig larkProjectConfig = new LarkProjectConfig();
+        larkProjectConfig.setDemandId("12142878");
+        String inConfig = JSON.toJSONString(larkProjectConfig);
+        client.getDemands(inConfig);
+    }
 
-//        PlatformRequest request = new PlatformRequest();
-//        request.setIntegrationConfig("{\"plugInId\":\"MII_6368AC54F10B8002\",\"LarkPlugin\":\"91B7B426685F188A222D3F3CCACB491F\",\"url\":\"https://project.feishu.cn\",\"pluginId\":\"MII_6368AC54F10B8002\",\"pluginSecret\":\"91B7B426685F188A222D3F3CCACB491F\",\"userKey\":\"61340112956145665\"}");
-//        client = new LarkPlatform(request);
+    @Test
+    public void syncAllIssues(){
+        SyncAllIssuesRequest syncIssuesRequest = new SyncAllIssuesRequest();
+        LarkProjectConfig larkProjectConfig = new LarkProjectConfig();
+        larkProjectConfig.setDemandId("15073842");
+        String inConfig = JSON.toJSONString(larkProjectConfig);
+        syncIssuesRequest.setProjectConfig(inConfig);
+        client.syncAllIssues(syncIssuesRequest);
     }
 
     @Test
@@ -94,7 +116,7 @@ public class LarkClientTest {
         larkSearchParam.setValue(Arrays.asList(1142750));
         larkSearchGroup.getSearch_params().add(larkSearchParam);
         larkWorkItemRequest.setSearch_group(larkSearchGroup);
-//        List<PlatformCustomFieldItemDTO> temp = client.getThirdPartCustomFieldIO(JSON.toJSONString(larkConfig));
+        List<PlatformCustomFieldItemDTO> temp = client.getThirdPartCustomFieldIO(JSON.toJSONString(larkConfig));
         Object obj = client.searchWorkItemAll(larkWorkItemRequest,"issue");
         System.out.println(obj);
     }
@@ -166,7 +188,14 @@ public class LarkClientTest {
     public void getThirdPartCustomField() throws Exception{
         HashMap<String,String> a = new HashMap<>();
         a.put("spaceId","6389a7347efa66176062c4fc");
+        a.put("demandId","227635");
         client.getThirdPartCustomField(JSON.toJSONString(a));
+    }
+
+    @Test
+    public void getStatusList(){
+        List<PlatformStatusDTO> t = client.getStatusList("aaa");
+        System.out.println(JSON.toJSONString(t));
     }
     @Test
     public void checkCommentInfo() {
@@ -178,18 +207,28 @@ public class LarkClientTest {
     }
 
     @Test
+    public void ddd(){
+        Object a = "[\"7152532929715896348\"]";
+        a = (a+"").replace("\"","");
+        List<String> temp = JSON.parseArray(a+"");
+        System.out.println(temp);
+    }
+
+    @Test
     public void getProjectOptions() {
         GetOptionRequest getOptionRequest = new GetOptionRequest();
         getOptionRequest.setOptionMethod("aa");
         System.out.println(client.getProjectOptions(getOptionRequest));
     }
 
-//    @Test
-//    public void v() {
-//        LarkProjectConfig larkProjectConfig = new LarkProjectConfig();
-//        larkProjectConfig.setSpaceId("6364c89a48cdc29cab10c396");
-//        client.validateProjectConfig(JSON.toJSONString(larkProjectConfig));
-//    }
+    @Test
+    public void v() {
+       Object a = 123;
+        List<String> temp = new ArrayList<>();
+        temp.add(a+"");
+        Object b = temp;
+        System.out.println(b);
+    }
 
     @Test
     public void getIssueTypes(){
@@ -197,5 +236,32 @@ public class LarkClientTest {
         getOptionRequest.setProjectConfig("6364c89a48cdc29cab10c396");
         List<SelectOption> selectOptions = client.getIssueTypes(getOptionRequest);
         System.out.println(JSON.toJSONString(selectOptions));
+    }
+
+    @Test
+    public void addIssues(){
+        PlatformIssuesUpdateRequest platformIssuesUpdateRequest = new PlatformIssuesUpdateRequest();
+        platformIssuesUpdateRequest.setUserPlatformUserConfig("{\"accessKeyID\":\"LTAI5tFjnEKwhV8oW7LdqHBC\",\"accessKeySecret\":\"vbZpjooLytNvGpVGllsMLtAGvddrMk\",\"accountId\":\"1212517348583146\",\"pluginId\":\"MII_63C4D9A1E1C14003\",\"pluginSecret\":\"ADEC309FEF445FD40ED830976C2E7FB5\",\"userKey\":\"7152532929715896348\"}");
+        platformIssuesUpdateRequest.setProjectConfig("{\"demandId\":\"15073842\",\"jiraKey\":null,\"tapdId\":null,\"azureDevopsId\":null,\"zentaoId\":null,\"thirdPartTemplate\":true}");
+        platformIssuesUpdateRequest.setProjectId("74879a0b-aef4-4091-98bb-e81e7275e6a6");
+        platformIssuesUpdateRequest.setCreator("admin");
+        List<PlatformCustomFieldItemDTO> customFieldList = new ArrayList<>();
+        PlatformCustomFieldItemDTO p = new PlatformCustomFieldItemDTO();
+        p.setValue("62a69ddd9afa9ae828ba1265");
+        p.setCustomData("business");
+        p.setId("business");
+        p.setType("select");
+        p.setName("产品线");
+        customFieldList.add(p);
+        platformIssuesUpdateRequest.setCustomFieldList(customFieldList);
+        client.addIssue(platformIssuesUpdateRequest);
+    }
+
+    @Test
+    public void getThirdPartCustomFieldIO(){
+        LarkProjectConfig larkProjectConfig = new LarkProjectConfig();
+        larkProjectConfig.setDemandId("6711729");
+        String inConfig = JSON.toJSONString(larkProjectConfig);
+        client.getThirdPartCustomFieldIO(inConfig);
     }
 }

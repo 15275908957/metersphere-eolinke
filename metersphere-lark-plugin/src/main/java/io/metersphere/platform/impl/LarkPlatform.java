@@ -1,9 +1,11 @@
 package io.metersphere.platform.impl;
 
+//import Lincense.CheckLicense;
+import io.metersphere.base.domain.IssuesWithBLOBs;
 import io.metersphere.platform.commons.FieldTypeMapping;
+import io.metersphere.platform.constants.CustomFieldType;
 import io.metersphere.platform.domain.*;
 import io.metersphere.platform.api.AbstractPlatform;
-import io.metersphere.base.domain.*;
 import io.metersphere.plugin.exception.MSPluginException;
 import io.metersphere.plugin.utils.JSON;
 import io.metersphere.plugin.utils.LogUtil;
@@ -18,7 +20,7 @@ public class LarkPlatform extends AbstractPlatform {
     public LarkAbstractClient larkAbstractClient;
 
     public LarkPlatform(PlatformRequest request){
-
+//        CheckLicense.checkLicenseByRedis();
         super.key = LarkPlatformMetaInfo.KEY;
         super.request = request;
         larkAbstractClient = new LarkAbstractClient();
@@ -67,7 +69,17 @@ public class LarkPlatform extends AbstractPlatform {
 
     public void refreshUserToken(String userConfig) {
         if(StringUtils.isNotEmpty(userConfig)){
-            LarkUserPlatformUserConfig larkUserPlatformUserConfig = JSON.parseObject(userConfig, LarkUserPlatformUserConfig.class);
+            LarkUserPlatformUserConfig larkUserPlatformUserConfig = null;
+            try{
+                larkUserPlatformUserConfig = JSON.parseObject(userConfig, LarkUserPlatformUserConfig.class);
+            }catch (Exception e){
+                return;
+            }
+            if(StringUtils.isBlank(larkUserPlatformUserConfig.getPluginId())
+             || StringUtils.isBlank(larkUserPlatformUserConfig.getPluginSecret())
+             || StringUtils.isBlank(larkUserPlatformUserConfig.getUserKey())){
+                MSPluginException.throwException("请填写完整的个人信息第三方账号");
+            }
             larkAbstractClient.PLUGIN_ID = larkUserPlatformUserConfig.getPluginId();
             larkAbstractClient.PLUGIN_SECRET = larkUserPlatformUserConfig.getPluginSecret();
             larkAbstractClient.USER_KEY = larkUserPlatformUserConfig.getUserKey();
@@ -281,7 +293,7 @@ public class LarkPlatform extends AbstractPlatform {
 
     @Override
     public SyncIssuesResult syncIssues(SyncIssuesRequest request){
-        MSPluginException.throwException("同步失败");
+//        MSPluginException.throwException("同步失败");
         //找出ms所需要的飞书字段模版
         List<PlatformCustomFieldItemDTO> platformCustomFieldItemDTOS = null;
         platformCustomFieldItemDTOS = getThirdPartCustomField(request.getProjectConfig());
@@ -363,7 +375,6 @@ public class LarkPlatform extends AbstractPlatform {
 
     @Override
     public List<PlatformCustomFieldItemDTO> getThirdPartCustomField(String projectConfig){
-        MSPluginException.throwException("apacheaaa");
         return getThirdPartCustomFieldIO(projectConfig);
 //        LarkProjectConfig lpc = JSON.parseObject(projectConfig, LarkProjectConfig.class);
 //        // json 可能等于三个值，null TIMEOUT object
@@ -429,6 +440,22 @@ public class LarkPlatform extends AbstractPlatform {
         return platformCustomFieldItemDTOS;
     }
 
+//    private List<MSOption> getJLXZ(List<LarkOption> ite){
+//        List<MSOption> msOptionList = new ArrayList<>();
+//        // 默认只可以选最底层
+//        for(LarkOption item : ite){
+//            if(item.getChildren() != null || item.getChildren().size() != 0){
+//                recursionJLXZ(item.getValue());
+//            }else{
+//                msOptionList.add(new MSOption(item.getLabel(), item.getValue()));
+//            }
+//        }
+//        return msOptionList;
+//    }
+
+
+
+
     public void settingValue(PlatformCustomFieldItemDTO temp, LarkFieldConf item, Map<String, LarkSimpleField> larkSimpleFieldMap, List<MSOption> userList, List<DemandDTO> demandDTOS){
         //必填
         if(item.getIs_required() == 1) temp.setRequired(true);
@@ -440,6 +467,9 @@ public class LarkPlatform extends AbstractPlatform {
         temp.setCustomData(item.getField_key());
         //类型
         temp.setType(FieldTypeMapping.getMsTypeBylarkType(item.getField_type_key()));
+        if(StringUtils.equalsAny(item.getField_key(), "issue_reporter","issue_operator")){
+            temp.setType(CustomFieldType.SELECT.getValue());
+        };
         //值
         LarkSimpleField larkSimpleField = larkSimpleFieldMap.get(item.getField_key());
         //id
@@ -458,16 +488,26 @@ public class LarkPlatform extends AbstractPlatform {
             temp.setOptions(JSON.toJSONString(msOptionList));
         }else if(StringUtils.equals(item.getField_type_key(), "business")){
             LarkSimpleField larkSimpleField1 = larkSimpleFieldMap.get("business");
+
+            // 默认只可以选最底层
+//            List<MSOption> msOptionList = getJLXZ(larkSimpleField1.getOptions());
             List<MSOption> msOptionList = new ArrayList<>();
             for(LarkOption ite: larkSimpleField1.getOptions()){
-                if(ite == null || ite.getChildren() == null){
+                if(ite == null){
                     continue;
-                }
-                for(LarkOption it: ite.getChildren()){
+                } else if(ite.getChildren() == null){
                     MSOption msOption = new MSOption();
-                    msOption.setText(ite.getLabel()+" / "+it.getLabel());
-                    msOption.setValue(it.getValue());
+                    msOption.setText(ite.getLabel());
+                    msOption.setValue(ite.getValue());
                     msOptionList.add(msOption);
+                } else {
+                    for(LarkOption it: ite.getChildren()){
+                        MSOption msOption = new MSOption();
+                        msOption.setText(ite.getLabel()+" / "+it.getLabel());
+//                    msOption.setValue(ite.getValue()+"/"+it.getValue());
+                        msOption.setValue(it.getValue());
+                        msOptionList.add(msOption);
+                    }
                 }
             }
             temp.setOptions(JSON.toJSONString(msOptionList));
@@ -516,13 +556,18 @@ public class LarkPlatform extends AbstractPlatform {
 
     @Override
     public List<PlatformStatusDTO> getStatusList(String issueKey) {
-        // 飞书好像没有用到
-//        List<PlatformStatusDTO> l = new ArrayList<>();
-//        PlatformStatusDTO p = new PlatformStatusDTO();
-//        p.setValue("待办");
-//        p.setLabel("待办");
-//        l.add(p);
-        return null;
+        Map<String, LarkSimpleField> larkSimpleFieldMap = larkAbstractClient.getSpaceField();
+        LarkSimpleField larkSimpleField = larkSimpleFieldMap.get("work_item_status");
+        List<PlatformStatusDTO> l = new ArrayList<>();
+        for(LarkOption item:larkSimpleField.getOptions()){
+            if(StringUtils.equals("issue", item.getWork_item_type_key())){
+                PlatformStatusDTO p = new PlatformStatusDTO();
+                p.setValue(item.getValue());
+                p.setLabel(item.getLabel());
+                l.add(p);
+            }
+        }
+        return l;
     }
 
     @Override

@@ -1,8 +1,8 @@
 package io.metersphere.platform.conver;
 
+import Lincense.CheckLicense;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.google.gson.Gson;
 import io.metersphere.platform.domain.EOlinker.ApiListEntity;
 import io.metersphere.platform.domain.EOlinker.ProjectAPIEntity;
 import io.metersphere.platform.mysql.MysqlUtils;
@@ -15,7 +15,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ConverEolinker {
-    private Gson gson = new Gson();
+
+    public ConverEolinker(){
+        CheckLicense.checkLicenseByRedis();
+    }
 
     public File getEolinkerFile(String filePath){
         File file = UseFile.readFile(filePath);

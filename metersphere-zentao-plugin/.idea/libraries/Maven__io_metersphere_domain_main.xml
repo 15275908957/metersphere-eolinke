@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.metersphere:domain:main">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/metersphere/domain/main/domain-main.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/io/metersphere/domain/main/domain-main-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/metersphere/domain/main/domain-main-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
